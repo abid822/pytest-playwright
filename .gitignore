@@ -1,0 +1,16 @@
+# Ignore virtual environments
+venv/
+env/
+
+# Ignore Pytest and Python cache files
+.pytest_cache/
+__pycache__/
+*.pyc
+
+# Ignore your Playwright session data
+user_data/
+user_data_*/
+
+# Ignore test reports (optional, but good practice so you don't clutter GitHub)
+reports/
+
