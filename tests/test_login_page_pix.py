@@ -12,10 +12,11 @@ from pages.amazon_login_actions import AmazonLoginActions
 @pytest.mark.smoke
 def test_amazon_login_page_pixelmatch(sb_page):
     # 1. Give the browser to your actions class
-    
+
     actions = AmazonLoginActions(sb_page)
     # 2. CALL YOUR SETUP STEPS! (Explicitly, with parentheses)
     actions.navigate_to_login_screen()
+
 
 
     # STEP 4: The Pixelmatch Visual Comparison
