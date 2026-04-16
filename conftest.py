@@ -6,17 +6,23 @@ from playwright.sync_api import sync_playwright
 @pytest.fixture(scope="session")
 def browser_context_managed():
     # Setup the 'Human' profile folder
+# Setup the 'Human' profile folder
     user_data_dir = os.path.join(os.getcwd(), "user_data")
     if not os.path.exists(user_data_dir):
         os.makedirs(user_data_dir)
 
     with sync_playwright() as p:
-        # Launch with built-in bot hiding
         context = p.chromium.launch_persistent_context(
             user_data_dir=user_data_dir,
             headless=False,
             slow_mo=500,
-            args=["--disable-blink-features=AutomationControlled"]
+            # We use '--start-fullscreen' instead of '--start-maximized'
+            args=[
+                "--disable-blink-features=AutomationControlled", 
+                "--start-fullscreen" 
+            ],
+            # This must be True so Playwright doesn't force a small viewport
+            no_viewport=True 
         )
         yield context
         context.close()
