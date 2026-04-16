@@ -1,17 +1,11 @@
 import pytest
-import os
-from PIL import Image
-from pixelmatch.contrib.PIL import pixelmatch
 from playwright.sync_api import expect 
-from locators.amazon_locators import AmazonHomeLocators
-from locators.amazon_login_pg_locators import AmazonLoginLocators
 from locators.amazon_tabs_locator import AmazonTabsLocator
-from pages.amazon_login_actions import AmazonLoginActions
 from pages.navigation_page import AmazonNavigationPage
 # from [folder].[file_name] import [ClassName]
 
 
-@pytest.mark.tabs
+
 @pytest.mark.smoke
 def test_amazon_tabs(sb_page):
     # 1. Give the browser to your actions class
