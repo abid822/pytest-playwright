@@ -1,6 +1,18 @@
 from typing import ClassVar
+
+
 class AmazonTabsLocator:
-    """Locators for Amazon top navigation bar tabs."""
+
+    # The parent container holding all the tabs
+    NAV_CONTAINER = "#nav-xshop-container"
+    # We can also target all links inside that container directly
+    ALL_TABS_LINKS = "#nav-xshop-container a"
+    # The 'All' hamburger menu button
+    HAMBURGER_MENU = "#nav-hamburger-menu"
+    # The container that appears after clicking
+    MENU_CONTENT = "#hmenu-content"
+    # All links inside the visible menu
+    MENU_ITEMS = "#hmenu-content a.hmenu-item"
     # Top Navigation Bar Locators
     AMAZON_HAUL: ClassVar[str] = "#nav-link-amazon-haul"
     MEDICAL_CARE: ClassVar[str] = "#nav-link-health"
