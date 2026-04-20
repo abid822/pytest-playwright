@@ -9,5 +9,6 @@ class AmazonLoginLocators:
     NEED_HELP_LINK = "//*[@id='claim-collection-container']/div[1]/ul/li/span/a"
     BUYING_FOR_WORK_LINK = "//*[@id='ab-registration-ingress-link']"
     BUYING_FOR_WORK_TEXT= "//*[@id='ab-registration-link-section']/div/span"
+    SIGN_IN_BUTTON = "//*[@id='nav-flyout-ya-signin']/a/span"
 
 

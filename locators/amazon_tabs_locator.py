@@ -26,3 +26,4 @@ class AmazonTabsLocator:
     GROCERIES: ClassVar[str] = "#nav-link-grocery"
     NEW_RELEASES: ClassVar[str] = "#nav-link-newreleases"
     REGISTRY: ClassVar[str] = "#nav-link-registry"
+    

@@ -10,6 +10,7 @@ from pages.amazon_login_actions import AmazonLoginActions
 
 @pytest.mark.login
 @pytest.mark.smoke
+@pytest.mark.visual
 def test_amazon_login_page_pixelmatch(sb_page):
     # 1. Give the browser to your actions class
 
