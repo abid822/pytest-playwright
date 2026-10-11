@@ -4,6 +4,7 @@ import pytest
 from playwright.sync_api import expect, sync_playwright
 
 from config.settings import ROOT, settings
+from pages.automotive_page import AutomotivePage
 from pages.home_page import HomePage
 from pages.login_page import LoginPage
 from pages.search_results_page import SearchResultsPage
@@ -57,6 +58,11 @@ def login_page(sb_page) -> LoginPage:
 @pytest.fixture
 def search_results_page(sb_page) -> SearchResultsPage:
     return SearchResultsPage(sb_page)
+
+
+@pytest.fixture
+def automotive_page(sb_page) -> AutomotivePage:
+    return AutomotivePage(sb_page)
 
 
 @pytest.hookimpl(hookwrapper=True)

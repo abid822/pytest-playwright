@@ -57,7 +57,5 @@ class LoginPage(HomePage):
         expect(self.buying_for_work.first).to_be_visible()
 
     def login_form(self):
-        # Main sign-in form (used by the pixel test)
-        return self.page.locator(
-            "#authportal-main-section, form[name='signIn'], #ap_email_login"
-        ).first
+        # Sign-in card (email field + Continue), used by the pixel test
+        return self.page.locator(".a-box.ax-content-container, #claim-collection-container").first

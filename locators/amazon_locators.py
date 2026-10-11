@@ -8,3 +8,4 @@ class AmazonSearchLocators:
     PRODUCT_CARDS = "div[data-component-type='s-search-result']"  # one result row
     PRICE_WHOLE = ".a-price-whole"
     ADD_TO_CART_BUTTON = "button:has-text('Add to cart')"
+    SORT_SELECT = "#s-result-sort-select"  # Featured / Price: Low to High
