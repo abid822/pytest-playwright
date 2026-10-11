@@ -4,7 +4,7 @@ Amazon UI tests with Pytest + Playwright — page objects, headed Chrome, and a 
 
 **Origin story:** Abidur Chowdhury summoned the framework. **Cursoragent magic** then showed up, poked every locator, watched Chrome click around like a caffeinated shopper, and declared the suite battle-tested.
 
-If a test fails at 2am, blame Amazon. If it passes, thank Abidur. If it somehow adds the cheapest seat cover to the cart, that's the magic.
+If a test fails at 2am, blame Amazon. If it passes, thank Abidur.
 
 ## Layout
 
