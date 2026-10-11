@@ -1,76 +1,80 @@
-import pytest
-import os
 import base64
-from playwright.sync_api import sync_playwright
+
+import pytest
+from playwright.sync_api import expect, sync_playwright
+
+from config.settings import ROOT, settings
+from pages.home_page import HomePage
+from pages.login_page import LoginPage
+from pages.search_results_page import SearchResultsPage
+
 
 @pytest.fixture(scope="session")
 def browser_context_managed():
-    # Setup the 'Human' profile folder
-# Setup the 'Human' profile folder
-    user_data_dir = os.path.join(os.getcwd(), "user_data")
-    if not os.path.exists(user_data_dir):
-        os.makedirs(user_data_dir)
+    (ROOT / "reports").mkdir(exist_ok=True)
+    launch_args = {
+        "headless": settings.headless,
+        "slow_mo": settings.slow_mo,
+        "args": ["--disable-blink-features=AutomationControlled"],
+    }
+    if settings.browser_channel:
+        launch_args["channel"] = settings.browser_channel
 
-    with sync_playwright() as p:
-        context = p.chromium.launch_persistent_context(
-            user_data_dir=user_data_dir,
-            headless=False,
-            slow_mo=500,
-            # We use '--start-fullscreen' instead of '--start-maximized'
-            args=[
-                "--disable-blink-features=AutomationControlled", 
-                "--start-fullscreen" 
-            ],
-            # This must be True so Playwright doesn't force a small viewport
-            no_viewport=True 
+    with sync_playwright() as playwright:
+        browser = playwright.chromium.launch(**launch_args)
+        context = browser.new_context(
+            viewport={
+                "width": settings.viewport_width,
+                "height": settings.viewport_height,
+            },
+            ignore_https_errors=True,
         )
+        context.set_default_timeout(settings.default_timeout_ms)
+        expect.set_options(timeout=settings.default_timeout_ms)
         yield context
         context.close()
+        browser.close()
+
 
 @pytest.fixture
 def sb_page(browser_context_managed, request):
     page = browser_context_managed.new_page()
-    
-    # ⚠️ CRITICAL STEP: We attach the page to the 'request' object.
-    # This allows the screenshot hook below to find the active browser window.
-    request.node.page = page 
-    
+    request.node.page = page
     yield page
     page.close()
 
 
-# =================================================================
-# REPORTING HOOK: Takes screenshots on Failure or Skip
-# =================================================================
+@pytest.fixture
+def home_page(sb_page) -> HomePage:
+    return HomePage(sb_page)
+
+
+@pytest.fixture
+def login_page(sb_page) -> LoginPage:
+    return LoginPage(sb_page)
+
+
+@pytest.fixture
+def search_results_page(sb_page) -> SearchResultsPage:
+    return SearchResultsPage(sb_page)
+
+
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_makereport(item, call):
-    # This executes the test and gets the result
     outcome = yield
     report = outcome.get_result()
-    
-    # 'extras' is where pytest-html stores extra data like images
     extras = getattr(report, "extras", [])
+    if report.when == "call" and report.failed:
+        page = getattr(item, "page", None)
+        if page:
+            import pytest_html
 
-    # We only care about the moment the test actually executes ("call")
-    if report.when == "call":
-        # Check if the test failed or skipped
-        if report.failed or report.skipped:
-            # Grab the active page object we attached in the fixture earlier
-            page = getattr(item, "page", None)
-            
-            if page:
-                # 1. Take the screenshot in memory (bytes)
-                screenshot_bytes = page.screenshot()
-                
-                # 2. Convert it to a Base64 string (embeds it directly into HTML)
-                b64_img = base64.b64encode(screenshot_bytes).decode()
-                
-                # 3. Create the HTML image tag
-                import pytest_html
-                html_snippet = f'<div><img src="data:image/png;base64,{b64_img}" alt="screenshot" style="width:600px;height:auto;border:2px solid red;margin-top:10px;" /></div>'
-                
-                # 4. Attach it to the report
-                extras.append(pytest_html.extras.html(html_snippet))
-    
-    # Save the attachments back to the report
+            screenshot_bytes = page.screenshot()
+            b64_img = base64.b64encode(screenshot_bytes).decode()
+            extras.append(
+                pytest_html.extras.html(
+                    f'<div><img src="data:image/png;base64,{b64_img}" '
+                    f'alt="screenshot" style="width:600px;border:2px solid red;" /></div>'
+                )
+            )
     report.extras = extras
