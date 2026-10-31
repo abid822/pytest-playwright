@@ -71,7 +71,7 @@ class HomePage(BasePage):
         expect(self.search_button).to_be_visible()
         expect(self.search_button).to_be_enabled()
         self.search_button.click()
-        # Step 3: Wait for results URL. WebKit sometimes detours through the shopping gate.
+        # Step 3: Wait for results. A bot checkpoint skips the test.
         self.wait_for_page_load()
         self.dismiss_continue_shopping()
         expect(self.page).to_have_url(re.compile(r"k=", re.I))
@@ -243,7 +243,7 @@ class HomePage(BasePage):
         expect(target).to_be_visible()
         expect(target).to_be_enabled()
         target.scroll_into_view_if_needed()
-        # Step 2: Open language preferences. A click can land on the shopping gate.
+        # Step 2: Open language preferences. A bot checkpoint skips the test.
         try:
             target.click(timeout=8000)
         except Exception:
@@ -274,8 +274,7 @@ class HomePage(BasePage):
 
     def expect_cart_not_empty(self) -> None:
         # Header cart badge should not still be 0.
-        # WebKit can finish an add by navigating to the shopping gate, which
-        # leaves the badge at 0 until that gate is cleared.
+        # A bot checkpoint skips the test instead of leaving the badge at 0.
         self.wait_for_page_load()
         self.dismiss_continue_shopping()
         expect(self.cart_count).to_be_visible()
