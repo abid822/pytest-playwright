@@ -2,18 +2,20 @@ import re
 
 from playwright.sync_api import Page, expect
 
-from locators.amazon_locators import AmazonSearchLocators
+from locators.amazon_locators import AmazonHomeLocators, AmazonSearchLocators
 from pages.base_page import BasePage
 
 
 class SearchResultsPage(BasePage):
-    """Search results: sort, then add a product to the cart."""
+    """Search results: sort, paginate, then add a product to the cart."""
 
     def __init__(self, page: Page) -> None:
         super().__init__(page)
         # Each product card in the results grid
         self.results = page.locator(AmazonSearchLocators.PRODUCT_CARDS)
         self.sort_select = page.locator(AmazonSearchLocators.SORT_SELECT)
+        self.continue_shopping = page.locator(AmazonHomeLocators.CONTINUE_SHOPPING_BUTTON)
+        self.selected_page = page.locator(AmazonSearchLocators.PAGINATION_SELECTED)
 
     def sort_by_price_low_to_high(self) -> None:
         # Step 1: Click the visible Sort by control next to the hidden native <select>
@@ -41,6 +43,61 @@ class SearchResultsPage(BasePage):
                 href = "https://www.amazon.com" + href
             self.page.goto(href)
             expect(self.page).to_have_url(re.compile(r"price-asc-rank|s=price-asc"))
+        expect(self.results.first).to_be_visible()
+
+    def _dismiss_continue_shopping(self) -> None:
+        # Fresh sessions sometimes land on a continue-shopping check
+        search = self.page.locator(AmazonSearchLocators.SEARCH_INPUT)
+        if search.count() and search.first.is_visible():
+            return
+        if self.continue_shopping.count() == 0:
+            return
+        self.continue_shopping.first.click()
+        expect(search).to_be_visible()
+
+    def search_from_home(self, query: str) -> None:
+        # Step 1: Open Amazon home
+        self.open()
+        # Step 2: Clear the continue-shopping check when it is shown
+        self._dismiss_continue_shopping()
+        # Step 3: Type the query and submit
+        search = self.page.locator(AmazonSearchLocators.SEARCH_INPUT)
+        expect(search).to_be_visible()
+        search.fill(query)
+        self.page.locator(AmazonSearchLocators.SEARCH_BUTTON).click()
+        # Step 4: Wait until result cards are on the page
+        expect(self.page).to_have_url(re.compile(r"[?&]k=", re.I))
+        expect(self.results.first).to_be_visible()
+
+    def organic_result_titles(self, limit: int = 3) -> list[str]:
+        # First organic titles, skipping sponsored and unavailable tiles
+        expect(self.results.first).to_be_visible()
+        titles: list[str] = []
+        for i in range(min(self.results.count(), 24)):
+            card = self.results.nth(i)
+            if self._skip_card(card):
+                continue
+            heading = card.locator(AmazonSearchLocators.RESULT_TITLE)
+            if heading.count() == 0:
+                continue
+            text = " ".join(heading.first.inner_text().split())
+            if not text:
+                continue
+            titles.append(text)
+            if len(titles) >= limit:
+                break
+        assert titles, "No organic search results found"
+        return titles
+
+    def go_to_results_page(self, number: int) -> None:
+        # Step 1: Click the page number in the pagination strip
+        link = self.page.locator(AmazonSearchLocators.PAGINATION_PAGE_LINK.format(number))
+        expect(link).to_be_visible()
+        link.scroll_into_view_if_needed()
+        link.click()
+        # Step 2: URL and the highlighted page number should match
+        expect(self.page).to_have_url(re.compile(rf"[?&]page={number}(?:&|$)"))
+        expect(self.selected_page).to_have_text(str(number))
         expect(self.results.first).to_be_visible()
 
     def _skip_card(self, card) -> bool:
