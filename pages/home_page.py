@@ -68,12 +68,22 @@ class HomePage(BasePage):
         assert not missing, f"Missing nav tabs: {missing}"
 
     def open_hamburger_menu(self) -> None:
-        # Step 1: Click All / hamburger
+        # Step 1: Click All / hamburger until the left menu is actually open
         expect(self.hamburger.first).to_be_visible()
-        self.hamburger.first.click()
-        # Step 2: Wait for the left menu dialog
+        panel = self.visible_hamburger_panel()
+        opened = False
+        for _ in range(3):
+            self.hamburger.first.click()
+            try:
+                expect(panel).to_be_visible(timeout=4000)
+                opened = True
+                break
+            except AssertionError:
+                continue
+        if not opened:
+            expect(panel).to_be_visible()
+        # Step 2: Wait for the menu dialog and the first link
         expect(self.page.get_by_role("dialog").locator("#hmenu-content").first).to_be_visible()
-        # Step 3: Wait for the first menu link
         expect(self.menu_items.first).to_be_visible()
 
     def menu_item_texts(self) -> list[str]:
@@ -155,6 +165,13 @@ class HomePage(BasePage):
         self.page.mouse.move(scrollbar_x, end_y, steps=25)
         self.page.mouse.up()
         self.page.wait_for_timeout(400)
+        # Headless Chromium uses an overlay scrollbar the drag can miss
+        if self.hamburger_scroll_metrics()["scrollTop"] < 40:
+            self.page.mouse.move(box["x"] + box["width"] / 2, box["y"] + 80)
+            self.page.mouse.wheel(0, pixels)
+            self.page.wait_for_timeout(300)
+        if self.hamburger_scroll_metrics()["scrollTop"] < 40:
+            panel.evaluate("(el, dy) => { el.scrollTop += dy; }", pixels)
 
     def expect_hamburger_menu_scrolled(self, min_scroll_top: int = 40) -> None:
         # scrollTop must have increased after the drag

@@ -14,7 +14,8 @@ class AutomotivePage(HomePage):
         self.automotive_nav = page.get_by_role("link", name=re.compile(r"^Automotive$", re.I))
         self.your_garage = page.get_by_role("link", name=re.compile(r"Your Garage", re.I))
         self.add_first_vehicle = page.get_by_role(
-            "button", name=re.compile(r"Add your first vehicle|Add a vehicle", re.I)
+            "button",
+            name=re.compile(r"Add your first vehicle|Add a new vehicle|Add a vehicle", re.I),
         )
         self.select_new_vehicle = page.locator(AmazonAutomotiveLocators.ADD_VEHICLE)
         self.vehicle_type = page.locator(AmazonAutomotiveLocators.VEHICLE_TYPE)
@@ -36,30 +37,62 @@ class AutomotivePage(HomePage):
         expect(self.page).to_have_url(re.compile(r"automotive", re.I))
 
     def open_your_garage(self) -> None:
-        # Step 3: Open Your Garage
-        expect(self.your_garage.first).to_be_visible()
-        self.your_garage.first.click()
-        expect(self.page).to_have_url(re.compile(r"your-garage", re.I))
+        # Step 3: Open Your Garage. Headless sometimes lands on an empty document.
+        link = self.your_garage.first
+        expect(link).to_be_visible()
+        href = link.get_attribute("href") or "https://www.amazon.com/gp/your-garage/"
+        if href.startswith("/"):
+            href = "https://www.amazon.com" + href
+        link.click()
+        try:
+            expect(self.page).to_have_url(re.compile(r"your-garage", re.I), timeout=8000)
+        except AssertionError:
+            self.page.goto(href, wait_until="domcontentloaded")
+        try:
+            expect(self.add_first_vehicle.first).to_be_visible(timeout=5000)
+        except AssertionError:
+            self.page.goto(href, wait_until="domcontentloaded")
+            expect(self.page).to_have_url(re.compile(r"your-garage", re.I))
+            expect(self.add_first_vehicle.first).to_be_visible()
 
     def open_add_vehicle_form(self) -> None:
         # Step 4: Open the add-vehicle modal
         expect(self.add_first_vehicle.first).to_be_visible()
         self.add_first_vehicle.first.click()
         expect(self.page.get_by_role("dialog")).to_be_visible()
-        # Step 5: Switch from license plate to Year / Make / Model
-        self.select_new_vehicle.scroll_into_view_if_needed()
+        # Step 5: Switch from license plate to Year / Make / Model.
+        # A DOM click opens it in headed Chrome. Headless only toggles the radio icon.
+        self.select_new_vehicle.evaluate("el => el.scrollIntoView({block: 'center'})")
         self.select_new_vehicle.evaluate("el => el.click()")
-        expect(self.year).to_be_visible()
+        try:
+            expect(self.year).to_be_visible(timeout=3000)
+        except AssertionError:
+            box = self.select_new_vehicle.bounding_box()
+            assert box, "Select new vehicle row has no bounding box"
+            self.page.mouse.click(box["x"] + 14, box["y"] + box["height"] / 2)
+            expect(self.year).to_be_visible()
+
+    def _select_native_option(self, dropdown, option_label: str) -> None:
+        # Headless Chromium exposes these as native <select>s, not a listbox
+        field = dropdown.get_attribute("id") or ""
+        suffix = field.removeprefix("vehicle-select-chooser-")
+        native = self.page.locator(f"select#vehicle-select-chooser-native-{suffix}")
+        expect(native).to_be_attached()
+        native.select_option(label=option_label)
 
     def _pick_dropdown(self, dropdown, option_label: str) -> None:
-        # Amazon uses a custom listbox; pick by accessible option name
+        # Amazon uses a custom listbox in headed Chrome; pick by accessible name
         expect(dropdown).to_be_visible()
         dropdown.click()
         listbox = self.page.get_by_role("listbox")
-        expect(listbox).to_be_visible()
-        option = listbox.get_by_role("option", name=re.compile(rf"^{re.escape(option_label)}$", re.I))
+        try:
+            expect(listbox.first).to_be_visible(timeout=3000)
+        except AssertionError:
+            self._select_native_option(dropdown, option_label)
+            return
+        option = listbox.first.get_by_role("option", name=re.compile(rf"^{re.escape(option_label)}$", re.I))
         if option.count() == 0:
-            option = listbox.get_by_role("option", name=re.compile(option_label, re.I))
+            option = listbox.first.get_by_role("option", name=re.compile(option_label, re.I))
         expect(option.first).to_be_visible()
         option.first.click()
 
@@ -89,7 +122,18 @@ class AutomotivePage(HomePage):
         return shown
 
     def expect_vehicle_in_garage(self, year: str, make: str, model: str) -> None:
-        # Confirm the added vehicle shows on the garage (or success banner)
-        expect(self.page.get_by_text(make, exact=False).first).to_be_visible()
-        expect(self.page.get_by_text(year, exact=False).first).to_be_visible()
-        expect(self.page.get_by_text(re.compile(rf"{re.escape(model)}|\b3\b", re.I)).first).to_be_visible()
+        # Saving can bounce through Amazon's checkpoint page in headless
+        if "checkpoint" in self.page.url:
+            self.dismiss_continue_shopping()
+            button = self.page.get_by_role("button", name=re.compile(r"Continue", re.I))
+            if button.count() and button.first.is_visible():
+                button.first.click()
+        # Ignore the hidden <option> nodes left in the add-vehicle form
+        make_text = self.page.get_by_text(make, exact=False).locator("visible=true")
+        year_text = self.page.get_by_text(year, exact=False).locator("visible=true")
+        model_text = self.page.get_by_text(re.compile(rf"{re.escape(model)}|\b3\b", re.I)).locator(
+            "visible=true"
+        )
+        expect(make_text.first).to_be_visible()
+        expect(year_text.first).to_be_visible()
+        expect(model_text.first).to_be_visible()

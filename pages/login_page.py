@@ -32,12 +32,29 @@ class LoginPage(HomePage):
     def open_sign_in(self) -> None:
         # Step 1: Open Amazon home
         self.open_home()
-        # Step 2: Hover Account & Lists so Sign in appears
-        self.account_list.hover()
-        expect(self.sign_in).to_be_visible()
-        # Step 3: Click Sign in and wait for the email field
-        self.sign_in.click()
-        expect(self.email).to_be_visible()
+        # Step 2: Hover Account & Lists and click Sign in
+        href = self.account_list.get_attribute("href") or ""
+        box = self.account_list.bounding_box()
+        if box:
+            self.page.mouse.move(box["x"] + box["width"] / 2, box["y"] + box["height"] / 2)
+        else:
+            self.account_list.hover()
+        sign_link = self.sign_in.locator("a").first
+        if sign_link.count() and sign_link.is_visible():
+            sign_link.click()
+        else:
+            self.account_list.click()
+        # Step 3: If the flyout click stays on the home page, open the sign-in URL
+        try:
+            expect(self.email).to_be_visible(timeout=6000)
+        except AssertionError:
+            if not href:
+                href = sign_link.get_attribute("href") or ""
+            if href.startswith("/"):
+                href = "https://www.amazon.com" + href
+            assert href, "Sign in control has no href"
+            self.page.goto(href)
+            expect(self.email).to_be_visible()
 
     def submit_email(self, email: str) -> None:
         # Step 1: Enter email / phone

@@ -3,6 +3,7 @@ import re
 from playwright.sync_api import Page, expect
 
 from config.settings import settings
+from locators.amazon_locators import AmazonHomeLocators
 
 
 class BasePage:
@@ -16,3 +17,12 @@ class BasePage:
         self.page.goto(url or settings.base_url)
         # Step 2: Confirm we landed on amazon.com
         expect(self.page).to_have_url(re.compile(r"amazon\.com", re.I))
+        # Step 3: Pass the continue-shopping check when a fresh session gets one
+        self.dismiss_continue_shopping()
+
+    def dismiss_continue_shopping(self) -> None:
+        button = self.page.locator(AmazonHomeLocators.CONTINUE_SHOPPING_BUTTON)
+        if button.count() == 0 or not button.first.is_visible():
+            return
+        button.first.click()
+        expect(button).to_be_hidden()
