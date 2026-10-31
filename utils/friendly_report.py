@@ -42,6 +42,10 @@ STORIES: dict[str, dict[str, str]] = {
         "title": "Search page 2 is a new set of products",
         "why": "Searches hardcover notebooks, notes page 1 titles, opens page 2, and checks the products changed.",
     },
+    "test_language_settings_keep_english_and_offer_spanish": {
+        "title": "Language settings offer English and Spanish",
+        "why": "Opens the header language control and checks that English is selected, Spanish is available, and the choice is not saved.",
+    },
 }
 
 MARKER_LABELS = {
@@ -51,6 +55,7 @@ MARKER_LABELS = {
     "tabs": "Navigation",
     "automotive": "Automotive",
     "search": "Search",
+    "language": "Language",
 }
 
 

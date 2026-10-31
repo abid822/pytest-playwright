@@ -2,7 +2,7 @@ import re
 
 from playwright.sync_api import Page, expect
 
-from locators.amazon_locators import AmazonSearchLocators
+from locators.amazon_locators import AmazonLanguageLocators, AmazonSearchLocators
 from locators.amazon_tabs_locator import AmazonTabsLocator
 from pages.base_page import BasePage
 
@@ -35,6 +35,9 @@ class HomePage(BasePage):
         # Cart count in the header
         self.cart_count = page.locator("#nav-cart-count")
         self.cart_link = page.locator("#nav-cart")
+        # Header language control (EN). The clickable link sits inside the wrapper.
+        self.language_control = page.locator(AmazonLanguageLocators.HEADER_CONTROL)
+        self.language_link = self.language_control.locator("a").first
 
     def open_home(self) -> None:
         # Step 1: Load Amazon home
@@ -180,6 +183,53 @@ class HomePage(BasePage):
         assert metrics["scrollTop"] >= min_scroll_top, (
             f"Menu did not scroll; scrollTop={metrics['scrollTop']}"
         )
+
+    def _language_form_ready(self) -> bool:
+        # The preferences form lists English. Radios can be visually hidden.
+        try:
+            self.page.get_by_role("heading", name=re.compile(r"Language Settings", re.I)).wait_for(
+                state="visible", timeout=8000
+            )
+            return True
+        except Exception:
+            return False
+
+    def open_language_settings(self) -> None:
+        # Step 1: Header language control is on screen
+        expect(self.language_control).to_be_visible()
+        expect(self.language_link).to_be_visible()
+        href = self.language_link.get_attribute("href") or ""
+        # Step 2: Open language preferences. Follow the href if the click hits a checkpoint.
+        self.language_link.click()
+        if not self._language_form_ready():
+            self._click_visible_continue()
+            self.dismiss_continue_shopping()
+            if not self._language_form_ready() and href:
+                if href.startswith("/"):
+                    href = "https://www.amazon.com" + href
+                self.page.goto(href)
+                self.dismiss_continue_shopping()
+        expect(self.page).to_have_url(re.compile(r"customer-preferences/edit", re.I))
+
+    def _click_visible_continue(self) -> None:
+        button = self.page.get_by_role(
+            "button", name=re.compile(r"^Continue(?: shopping)?$", re.I)
+        )
+        if button.count() and button.first.is_visible():
+            button.first.click()
+
+    def expect_english_selected_and_spanish_available(self) -> None:
+        # Language form is showing, English is the current choice, Spanish is offered.
+        # Do not save — that would switch the shared browser session.
+        # Use the radio roles. A hidden header span also contains "English - EN".
+        expect(self.page.get_by_role("heading", name=re.compile(r"Language Settings", re.I))).to_be_visible()
+        english = self.page.locator(AmazonLanguageLocators.ENGLISH_RADIO)
+        spanish = self.page.locator(AmazonLanguageLocators.SPANISH_RADIO)
+        expect(english).to_be_checked()
+        expect(spanish).not_to_be_checked()
+        expect(english).to_have_accessible_name(re.compile(r"English\s*-\s*EN", re.I))
+        expect(spanish).to_have_accessible_name(re.compile(r"español", re.I))
+        expect(self.page.get_by_role("button", name=re.compile(r"^Save Changes$", re.I))).to_be_visible()
 
     def expect_cart_not_empty(self) -> None:
         # Header cart badge should not still be 0
