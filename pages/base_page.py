@@ -43,6 +43,46 @@ class BasePage:
         )
         return by_form.or_(by_text)
 
+    def _gate_continue_button(self):
+        # On the checkpoint page the accessible name is reliable. WebKit
+        # sometimes omits type=submit or the a-button-text class.
+        by_role = self.page.get_by_role(
+            "button", name=re.compile(r"^Continue(?: shopping)?$", re.I)
+        )
+        return self._continue_button().or_(by_role)
+
+    def _check_human_box(self) -> None:
+        # /checkpoint/validate leaves Continue shopping disabled until this box is checked.
+        name = re.compile(r"I am human", re.I)
+        scopes = [self.page]
+        scopes.extend(frame for frame in self.page.frames if frame != self.page.main_frame)
+        for scope in scopes:
+            box = scope.get_by_role("checkbox", name=name)
+            if box.count() == 0:
+                continue
+            target = box.first
+            try:
+                target.scroll_into_view_if_needed(timeout=3000)
+            except Exception:
+                pass
+            try:
+                if target.is_checked():
+                    return
+            except Exception:
+                pass
+            try:
+                target.check(timeout=5000)
+                return
+            except Exception:
+                pass
+            label = scope.get_by_text(re.compile(r"^I am human$", re.I))
+            try:
+                if label.count() and label.first.is_visible():
+                    label.first.click(timeout=5000)
+                    return
+            except Exception:
+                continue
+
     def _shopping_gate_present(self) -> bool:
         if re.search(r"checkpoint|validateCaptcha", self.page.url):
             return True
@@ -61,13 +101,15 @@ class BasePage:
             return
         if not on_gate:
             return
-        button = self._continue_button()
+        # The validate page keeps the submit button disabled until the box is checked.
+        self._check_human_box()
+        button = self._gate_continue_button()
         try:
             button.first.wait_for(state="visible", timeout=5000)
         except Exception:
             return
         target = button.first
-        # WebKit often paints this submit control disabled and never enables it.
+        # WebKit often paints this submit control disabled until the checkbox settles.
         try:
             expect(target).to_be_visible(timeout=5000)
             expect(target).to_be_enabled(timeout=8000)
@@ -80,9 +122,7 @@ class BasePage:
                         el.disabled = false;
                         el.removeAttribute('disabled');
                         try {
-                            if (form && typeof form.requestSubmit === 'function') {
-                                form.requestSubmit(el);
-                            } else if (form) {
+                            if (form) {
                                 form.submit();
                             } else {
                                 el.click();
