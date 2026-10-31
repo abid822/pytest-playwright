@@ -6,6 +6,7 @@ from utils.visual import compare_screenshot
 
 @pytest.mark.login
 @pytest.mark.chromium_only
+@pytest.mark.desktop_only
 @pytest.mark.skipif(
     settings.browser != "chromium",
     reason=(

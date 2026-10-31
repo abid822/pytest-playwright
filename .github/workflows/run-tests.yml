@@ -57,3 +57,11 @@ jobs:
           name: reports-${{ matrix.browser }}
           path: reports/
           if-no-files-found: warn
+
+      - name: Upload traces
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: traces-${{ matrix.browser }}
+          path: test-results/traces/
+          if-no-files-found: warn

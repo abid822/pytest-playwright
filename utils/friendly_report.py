@@ -58,6 +58,7 @@ MARKER_LABELS = {
     "language": "Language",
     "ci_skip": "Skipped in CI",
     "chromium_only": "Chromium baseline",
+    "desktop_only": "Desktop only",
 }
 
 

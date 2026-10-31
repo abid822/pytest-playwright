@@ -4,7 +4,7 @@
 
 Pytest and Playwright tests for Amazon.com. Each check is a page object calling locators: specs hold the steps, `pages/` holds the clicks and waits, and `locators/` holds the selectors. Visual checks compare a screenshot to a saved image with pixelmatch. Every run also writes a plain-language HTML report.
 
-Amazon is a live site. A captcha, a regional layout, or an experiment can fail a test when the code has not changed.
+Amazon is a live site. A captcha, `/checkpoint/`, or the AI-agent interstitial skips the test. The suite does not click through those pages. A regional layout or an experiment can still fail a test when the code has not changed.
 
 ## Features
 
@@ -13,13 +13,15 @@ Amazon is a live site. A captcha, a regional layout, or an experiment can fail a
 - Every run writes a plain-language HTML report and a pytest-html debug report.
 - `pytest -n auto` runs tests in parallel. Each worker launches its own browser, and the reports are merged at the end.
 - `BROWSER` selects Chromium, Firefox, or WebKit. Chromium is the default.
+- A failed test saves a Playwright trace under `test-results/traces/`. Open the zip at https://trace.playwright.dev. A passing test discards the trace.
+- `--device desktop` (the default) keeps the 1280×720 viewport. `--device mobile` emulates an iPhone 14. Tests marked `desktop_only` are skipped on mobile.
 - GitHub Actions runs that same suite on all three browsers.
 
 ## Layout
 
 | Path | Contents |
 | --- | --- |
-| `config/` | `settings.py` — base URL, browser, timeouts, and viewport from the environment |
+| `config/` | `settings.py` — base URL, browser, timeouts, viewport, and the desktop or mobile device profile |
 | `locators/` | Selectors: `HomeLocators`, `SearchLocators`, `LanguageLocators`, `LoginLocators`, `NavLocators`, `AutomotiveLocators` |
 | `pages/` | Page objects: `BasePage`, `HomePage`, `LoginPage`, `SearchResultsPage`, `AutomotivePage` |
 | `tests/` | Pytest modules. Specs call page objects and leave selectors in `locators/` |
@@ -27,8 +29,8 @@ Amazon is a live site. A captcha, a regional layout, or an experiment can fail a
 | `data/` | `hamburger_menu.json` — All menu labels. The test asserts a stable core set and warns on the rest |
 | `baselines/` | `amazon_login_form.png` for the sign-in visual check |
 | `assets/` | `style.css`, a pytest-html stylesheet kept in the repo. The debug report is self-contained and carries its own CSS |
-| `conftest.py` | Browser launch, page fixtures, and the report hooks |
-| `pytest.ini` | Test path, markers, and the pytest-html report |
+| `conftest.py` | Browser launch, device context, failure traces, page fixtures, and the report hooks |
+| `pytest.ini` | Test path, markers (including `desktop_only`), and the pytest-html report |
 | `requirements.txt` | pytest, Playwright, pytest-html, pytest-rerunfailures, pytest-xdist, Pillow, pixelmatch |
 | `.env.example` | Sample values for the variables below |
 
@@ -39,12 +41,12 @@ Amazon is a live site. A captcha, a regional layout, or an experiment can fail a
 | File | What it covers |
 | --- | --- |
 | `tests/test_login.py` | Opens sign-in from the header, submits `invalidemailgmail.com`, and expects the invalid-email error plus the helper links. Markers: `login`, `smoke`. |
-| `tests/test_login_visual.py` | Opens sign-in and compares the login form to `baselines/amazon_login_form.png`. Markers: `login`, `chromium_only`. Skipped on Firefox and WebKit because the baseline is a Chromium screenshot. |
-| `tests/test_nav_tabs.py` | Opens home and checks that Best Sellers, Today's Deals, Prime, and Sell are in the top nav. Markers: `smoke`, `tabs`. |
-| `tests/test_nav_container.py` | Opens home, checks the top nav strip is visible, and checks that more than five tab links are present. Marker: `tabs`. |
-| `tests/test_nav_hamburger.py` | Opens the All menu, requires a stable core set of labels (other JSON labels and extra live items are printed only), drags the scrollbar, and checks that Sign in is visible. Markers: `tabs`, `smoke`. |
+| `tests/test_login_visual.py` | Opens sign-in and compares the login form to `baselines/amazon_login_form.png`. Markers: `login`, `chromium_only`, `desktop_only`. Skipped on Firefox and WebKit because the baseline is a Chromium screenshot, and skipped with `--device mobile` because the baseline is the desktop form. |
+| `tests/test_nav_tabs.py` | Opens home and checks that Best Sellers, Today's Deals, Prime, and Sell are in the top nav. Markers: `smoke`, `tabs`, `desktop_only`. |
+| `tests/test_nav_container.py` | Opens home, checks the top nav strip is visible, and checks that more than five tab links are present. Markers: `tabs`, `desktop_only`. |
+| `tests/test_nav_hamburger.py` | Opens the All menu, requires a stable core set of labels (other JSON labels and extra live items are printed only), drags the scrollbar, and checks that Sign in is visible. Markers: `tabs`, `smoke`, `desktop_only`. |
 | `tests/test_cart.py` | Searches for `usb c charging cable`, adds the first result, and checks the header cart count is no longer 0. Markers: `cart`, `smoke`. |
-| `tests/test_search_pagination.py` | Searches for `hardcover notebook`, records organic titles on page 1, opens page 2, and checks the titles changed. Marker: `search`. |
+| `tests/test_search_pagination.py` | Searches for `hardcover notebook`, records organic titles on page 1, opens page 2, and checks the titles changed. Markers: `search`, `desktop_only`. Mobile web has no numbered page strip. |
 | `tests/test_automotive.py` | Opens Automotive, adds a 2023 Tesla Model 3 to Your Garage, logs whether "More vehicle information needed" is showing, searches seat covers, sorts Price: Low to High, adds the first result, opens the cart, and saves screenshots of both. Markers: `automotive`, `smoke`, `ci_skip`. |
 | `tests/test_language.py` | Opens language settings from the header EN control. English stays selected, Spanish is offered, and the form is left unsaved. Marker: `language`. |
 
@@ -86,6 +88,7 @@ pytest tests/test_cart.py
 pytest tests/test_cart.py::test_add_cheap_cable_to_cart
 pytest -m smoke
 pytest -n auto
+pytest --device mobile
 HEADLESS=true BROWSER=firefox pytest -n auto
 HEADLESS=true BROWSER=webkit pytest
 ```
@@ -98,7 +101,21 @@ HEADLESS=true pytest
 
 `-n auto` (pytest-xdist) starts one worker per CPU. Each worker opens its own browser. `reports/report.html` and `reports/pytest-debug.html` are written once, after the workers finish. Screenshot files include the worker id so they do not overwrite each other, for example `reports/amazon_login_form_actual.gw0.png` and `reports/seat_covers_cart.gw0.png`. A normal run without `-n` keeps the unsuffixed names.
 
-`pytest.ini` also defines `login`, `cart`, `tabs`, `automotive`, `search`, `language`, `ci_skip`, and `chromium_only`. `--strict-markers` is on, so an unknown marker fails collection.
+`pytest.ini` also defines `login`, `cart`, `tabs`, `automotive`, `search`, `language`, `ci_skip`, `chromium_only`, and `desktop_only`. `--strict-markers` is on, so an unknown marker fails collection.
+
+## Devices
+
+`--device` picks the browser profile for the run. The default is `desktop`, which keeps the current viewport (`VIEWPORT_WIDTH` by `VIEWPORT_HEIGHT`, 1280×720 unless you change those variables).
+
+```bash
+pytest --device desktop
+pytest --device mobile
+HEADLESS=true pytest --device mobile -n auto
+```
+
+`--device mobile` uses Playwright's built-in iPhone 14 descriptor: viewport, user agent, and touch. Chromium and WebKit also set `is_mobile`. Firefox omits `is_mobile`, which that browser does not accept.
+
+`desktop_only` marks a test that checks the desktop site: the top nav, the All menu, the numbered search-page strip, or the desktop sign-in screenshot. With `--device mobile`, those tests are skipped. Cart, sign-in, and language settings still run. The mobile header uses its own search box and Sign in link, and language settings open from the footer. The marker is registered in `pytest.ini`.
 
 ## Continuous Integration
 
@@ -106,11 +123,13 @@ HEADLESS=true pytest
 
 The test job is a matrix over `chromium`, `firefox`, and `webkit` with `fail-fast: false`, so one browser does not cancel the others. Each job installs only that browser, with its system libraries (`playwright install --with-deps`). It sets `HEADLESS=true`, `SLOW_MO=0`, `BROWSER` to the matrix value, and an empty `BROWSER_CHANNEL` so Chromium is the Playwright build rather than installed Google Chrome. The other variables in `.env.example` (`BASE_URL`, `DEFAULT_TIMEOUT_MS`, `VIEWPORT_WIDTH`, `VIEWPORT_HEIGHT`) are set to those sample values. It runs `pytest -n auto -m "not ci_skip" --reruns 1`. The extra retry covers a dropped connection. It does not change what a test asserts.
 
-`ci_skip` is for a test that cannot pass on a GitHub-hosted runner. Right now that is only `tests/test_automotive.py::test_add_2023_tesla_model_3_to_garage`: the Your Garage year/make/model control does not open in headless Chromium. It is deselected on every browser.
+`ci_skip` is for a test that cannot pass on a GitHub-hosted runner. Right now that is only `tests/test_automotive.py::test_add_2023_tesla_model_3_to_garage`: the Your Garage year/make/model control does not open in headless Chromium. It is deselected on every browser. CI keeps the default `--device desktop`.
 
 `chromium_only` is for the sign-in pixel check. The baseline image is Chromium. Firefox and WebKit skip that test instead of comparing against a screenshot they cannot match.
 
 Each job uploads `reports/` as `reports-chromium`, `reports-firefox`, or `reports-webkit`, including when tests fail. Open the workflow run on GitHub and download the artifact for that browser. It contains `report.html` and `pytest-debug.html`.
+
+When a job fails, it also uploads `test-results/traces` as `traces-chromium`, `traces-firefox`, or `traces-webkit`.
 
 ## Reports
 
@@ -122,5 +141,13 @@ Each job uploads `reports/` as `reports-chromium`, `reports-firefox`, or `report
 The automotive test also saves `reports/seat_covers_added_to_cart.png` and `reports/seat_covers_cart.png`.
 
 On a visual mismatch, `utils/visual.py` writes `reports/amazon_login_form_actual.png` and `reports/amazon_login_form_diff.png`. If the baseline file is missing, that run saves the current screenshot as the baseline. Under `pytest -n`, those files include the worker id.
+
+## Traces
+
+A failure writes `test-results/traces/<test-name>.<worker-id>.zip`. The trace includes screenshots, DOM snapshots, and the test sources. A pass discards the trace, so no zip is left behind. `test-results/` is gitignored.
+
+With `pytest -n`, the worker id is the xdist name (`gw0`, `gw1`, ...), for example `test_invalid_login.gw0.zip`. A run without `-n` uses `local`, for example `test_invalid_login.local.zip`.
+
+Open the zip at https://trace.playwright.dev. Drag the file onto the page. The viewer shows each action, the page snapshot, and the source line.
 
 Author: Abidur Chowdhury, [abidur.net](https://abidur.net)

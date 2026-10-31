@@ -11,5 +11,6 @@ user_data/
 user_data_*/
 reports/
 report.html
+test-results/
 .DS_Store
 .cursor/
