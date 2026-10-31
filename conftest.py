@@ -88,19 +88,23 @@ def pytest_runtest_makereport(item, call):
     screenshot_b64 = ""
     page = getattr(item, "page", None)
     if report.when == "call" and report.failed and page:
-        screenshot_bytes = page.screenshot()
-        screenshot_b64 = base64.b64encode(screenshot_bytes).decode()
         try:
-            import pytest_html
-
-            extras.append(
-                pytest_html.extras.html(
-                    f'<div><img src="data:image/png;base64,{screenshot_b64}" '
-                    f'alt="screenshot" style="width:600px;border:2px solid red;" /></div>'
-                )
-            )
+            screenshot_bytes = page.screenshot(timeout=5000)
+            screenshot_b64 = base64.b64encode(screenshot_bytes).decode()
         except Exception:
-            pass
+            screenshot_b64 = ""
+        else:
+            try:
+                import pytest_html
+
+                extras.append(
+                    pytest_html.extras.html(
+                        f'<div><img src="data:image/png;base64,{screenshot_b64}" '
+                        f'alt="screenshot" style="width:600px;border:2px solid red;" /></div>'
+                    )
+                )
+            except Exception:
+                pass
     report.extras = extras
 
     if report.when != "call":
