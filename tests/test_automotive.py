@@ -3,6 +3,7 @@ import pytest
 
 @pytest.mark.automotive
 @pytest.mark.smoke
+@pytest.mark.ci_skip  # Your Garage year/make/model control does not open in headless Chromium
 def test_add_2023_tesla_model_3_to_garage(automotive_page, search_results_page):
     # Step 1: Go to Amazon Automotive
     automotive_page.open_automotive()

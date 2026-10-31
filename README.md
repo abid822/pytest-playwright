@@ -1,3 +1,5 @@
+[![Tests](https://github.com/abid822/pytest-playwright/actions/workflows/run-tests.yml/badge.svg)](https://github.com/abid822/pytest-playwright/actions/workflows/run-tests.yml)
+
 # pytest-playwright
 
 Pytest and Playwright tests for Amazon.com. Each check is a page object calling locators: specs hold the steps, `pages/` holds the clicks and waits, and `locators/` holds the selectors. Visual checks compare a screenshot to a saved image with pixelmatch. Every run also writes a plain-language HTML report.
@@ -18,7 +20,7 @@ Amazon is a live site. A captcha, a regional layout, or an experiment can fail a
 | `assets/` | `style.css`, a pytest-html stylesheet kept in the repo. The debug report is self-contained and carries its own CSS |
 | `conftest.py` | Browser launch, page fixtures, and the report hooks |
 | `pytest.ini` | Test path, markers, and the pytest-html report |
-| `requirements.txt` | pytest, Playwright, pytest-html, Pillow, pixelmatch |
+| `requirements.txt` | pytest, Playwright, pytest-html, pytest-rerunfailures, Pillow, pixelmatch |
 | `.env.example` | Sample values for the variables below |
 
 `utils/visual.py` uses `baselines/amazon_login_form.<platform>.png` when that file exists (for example `amazon_login_form.darwin.png`). Otherwise it uses `baselines/amazon_login_form.png`.
@@ -79,7 +81,17 @@ Headed is the default (`HEADLESS=false`): a visible Chrome window, with `SLOW_MO
 HEADLESS=true pytest
 ```
 
-`pytest.ini` also defines `login`, `cart`, `tabs`, `automotive`, `search`, and `language`. `--strict-markers` is on, so an unknown marker fails collection.
+`pytest.ini` also defines `login`, `cart`, `tabs`, `automotive`, `search`, `language`, and `ci_skip`. `--strict-markers` is on, so an unknown marker fails collection.
+
+## Continuous Integration
+
+[`.github/workflows/run-tests.yml`](.github/workflows/run-tests.yml) runs on every push to `main`, on pull requests, every day at 13:00 UTC (`0 13 * * *`), and when the workflow is started by hand. The job uses `ubuntu-latest` and Python 3.12, caches pip, installs `requirements.txt`, and installs Playwright Chromium with `playwright install --with-deps chromium`.
+
+The job sets `HEADLESS=true`, `SLOW_MO=0`, and an empty `BROWSER_CHANNEL` so Playwright uses the installed Chromium. The other variables in `.env.example` (`BASE_URL`, `DEFAULT_TIMEOUT_MS`, `VIEWPORT_WIDTH`, `VIEWPORT_HEIGHT`) are set to those sample values. It runs `pytest -m "not ci_skip" --reruns 1`. The extra retry covers a dropped connection. It does not change what a test asserts.
+
+`ci_skip` is for a test that cannot pass on a GitHub-hosted runner. Right now that is only `tests/test_automotive.py::test_add_2023_tesla_model_3_to_garage`: the Your Garage year/make/model control does not open in headless Chromium. Everything else still runs.
+
+Each run uploads the `reports/` folder as the `reports` artifact, including when tests fail. Open the workflow run on GitHub and download that artifact for `report.html` and `pytest-debug.html`.
 
 ## Reports
 

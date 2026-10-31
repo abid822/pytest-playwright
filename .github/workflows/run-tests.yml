@@ -1,0 +1,53 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  schedule:
+    - cron: "0 13 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Install Playwright Chromium
+        run: playwright install --with-deps chromium
+
+      - name: Run tests
+        env:
+          BASE_URL: https://www.amazon.com/
+          HEADLESS: "true"
+          SLOW_MO: "0"
+          BROWSER_CHANNEL: ""
+          DEFAULT_TIMEOUT_MS: "15000"
+          VIEWPORT_WIDTH: "1280"
+          VIEWPORT_HEIGHT: "720"
+        run: pytest -m "not ci_skip" --reruns 1
+
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports
+          path: reports/
+          if-no-files-found: warn
