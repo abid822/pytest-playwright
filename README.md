@@ -46,7 +46,7 @@ pytest -m tabs
 pytest -m automotive
 ```
 
-HTML report: `reports/report.html`
+After a run, open **`reports/report.html`** — a dashboard of what each test checked, the steps, pass/fail, and a screenshot when something failed. Raw pytest-html is at `reports/pytest-debug.html`.
 
 ## Markers
 

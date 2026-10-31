@@ -8,6 +8,16 @@ from pages.automotive_page import AutomotivePage
 from pages.home_page import HomePage
 from pages.login_page import LoginPage
 from pages.search_results_page import SearchResultsPage
+from utils.friendly_report import (
+    ReportCollector,
+    TestRecord,
+    human_title,
+    marker_labels,
+    readable_error,
+    steps_from_item,
+    story_why,
+    write_report,
+)
 
 
 @pytest.fixture(scope="session")
@@ -65,22 +75,62 @@ def automotive_page(sb_page) -> AutomotivePage:
     return AutomotivePage(sb_page)
 
 
+def pytest_configure(config):
+    (ROOT / "reports").mkdir(exist_ok=True)
+    config._friendly_report = ReportCollector()
+
+
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_makereport(item, call):
     outcome = yield
     report = outcome.get_result()
     extras = getattr(report, "extras", [])
-    if report.when == "call" and report.failed:
-        page = getattr(item, "page", None)
-        if page:
+    screenshot_b64 = ""
+    page = getattr(item, "page", None)
+    if report.when == "call" and report.failed and page:
+        screenshot_bytes = page.screenshot()
+        screenshot_b64 = base64.b64encode(screenshot_bytes).decode()
+        try:
             import pytest_html
 
-            screenshot_bytes = page.screenshot()
-            b64_img = base64.b64encode(screenshot_bytes).decode()
             extras.append(
                 pytest_html.extras.html(
-                    f'<div><img src="data:image/png;base64,{b64_img}" '
+                    f'<div><img src="data:image/png;base64,{screenshot_b64}" '
                     f'alt="screenshot" style="width:600px;border:2px solid red;" /></div>'
                 )
             )
+        except Exception:
+            pass
     report.extras = extras
+
+    if report.when != "call":
+        return
+    collector = getattr(item.config, "_friendly_report", None)
+    if collector is None:
+        return
+    file_name = ""
+    if item.fspath:
+        file_name = str(item.fspath.basename)
+    collector.add(
+        TestRecord(
+            nodeid=item.nodeid,
+            name=item.name,
+            title=human_title(item.name),
+            why=story_why(item),
+            steps=steps_from_item(item),
+            markers=marker_labels(item),
+            outcome=report.outcome,
+            duration_s=report.duration,
+            stdout=report.capstdout or "",
+            error=readable_error(report.longrepr) if report.failed else "",
+            screenshot_b64=screenshot_b64,
+            file_name=file_name,
+        )
+    )
+
+
+def pytest_sessionfinish(session, exitstatus):
+    collector = getattr(session.config, "_friendly_report", None)
+    if collector is None:
+        return
+    write_report(collector, ROOT / "reports" / "report.html")
