@@ -4,7 +4,7 @@ from pathlib import Path
 
 from playwright.sync_api import Page, expect
 
-from config.settings import ROOT, settings
+from config.settings import report_png, settings
 from locators.home_locators import HomeLocators
 
 
@@ -30,9 +30,7 @@ class BasePage:
         expect(button).to_be_hidden()
 
     def save_screenshot(self, name: str) -> Path:
-        reports = ROOT / "reports"
-        reports.mkdir(exist_ok=True)
-        path = reports / f"{name}.png"
+        path = report_png(name)
         self.page.screenshot(path=str(path), full_page=True)
         print(f"\nScreenshot saved: {path}\n")
         return path

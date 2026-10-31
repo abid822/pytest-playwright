@@ -2,5 +2,6 @@ playwright>=1.49.0
 pytest>=8.3.0
 pytest-html>=4.1.0
 pytest-rerunfailures>=14.0
+pytest-xdist>=3.6.0
 pillow>=10.0.0
 pixelmatch>=0.3.0

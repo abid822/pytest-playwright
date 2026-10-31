@@ -1,4 +1,5 @@
 import base64
+from dataclasses import asdict
 
 import pytest
 from playwright.sync_api import expect, sync_playwright
@@ -20,19 +21,27 @@ from utils.friendly_report import (
 )
 
 
-@pytest.fixture(scope="session")
-def browser_context_managed():
-    (ROOT / "reports").mkdir(exist_ok=True)
+def _launch_browser(playwright):
+    # Each xdist worker is its own process, so this session fixture is one
+    # browser per worker. Chromium flags and BROWSER_CHANNEL do not apply
+    # to Firefox or WebKit.
     launch_args = {
         "headless": settings.headless,
         "slow_mo": settings.slow_mo,
-        "args": ["--disable-blink-features=AutomationControlled"],
     }
-    if settings.browser_channel:
-        launch_args["channel"] = settings.browser_channel
+    if settings.browser == "chromium":
+        launch_args["args"] = ["--disable-blink-features=AutomationControlled"]
+        if settings.browser_channel:
+            launch_args["channel"] = settings.browser_channel
+    browser_type = getattr(playwright, settings.browser)
+    return browser_type.launch(**launch_args)
 
+
+@pytest.fixture(scope="session")
+def browser_context_managed():
+    (ROOT / "reports").mkdir(exist_ok=True)
     with sync_playwright() as playwright:
-        browser = playwright.chromium.launch(**launch_args)
+        browser = _launch_browser(playwright)
         context = browser.new_context(
             viewport={
                 "width": settings.viewport_width,
@@ -75,9 +84,18 @@ def automotive_page(sb_page) -> AutomotivePage:
     return AutomotivePage(sb_page)
 
 
+# Workers record results on the pytest report. The controller (or a run
+# without xdist) copies those onto one collector and writes report.html.
+_friendly_collector: ReportCollector | None = None
+_is_xdist_worker = False
+
+
 def pytest_configure(config):
+    global _friendly_collector, _is_xdist_worker
     (ROOT / "reports").mkdir(exist_ok=True)
-    config._friendly_report = ReportCollector()
+    _is_xdist_worker = hasattr(config, "workerinput")
+    _friendly_collector = ReportCollector()
+    config._friendly_report = _friendly_collector
 
 
 @pytest.hookimpl(hookwrapper=True)
@@ -109,13 +127,12 @@ def pytest_runtest_makereport(item, call):
 
     if report.when != "call":
         return
-    collector = getattr(item.config, "_friendly_report", None)
-    if collector is None:
-        return
     file_name = ""
     if item.fspath:
         file_name = str(item.fspath.basename)
-    collector.add(
+    # Travels with the report to the xdist controller. A worker-local list
+    # would be dropped when that process exits.
+    report.friendly_record = asdict(
         TestRecord(
             nodeid=item.nodeid,
             name=item.name,
@@ -133,8 +150,21 @@ def pytest_runtest_makereport(item, call):
     )
 
 
-def pytest_sessionfinish(session, exitstatus):
-    collector = getattr(session.config, "_friendly_report", None)
-    if collector is None:
+def pytest_runtest_logreport(report):
+    if _is_xdist_worker or _friendly_collector is None:
         return
-    write_report(collector, ROOT / "reports" / "report.html")
+    payload = getattr(report, "friendly_record", None)
+    if not isinstance(payload, dict):
+        return
+    _friendly_collector.add(TestRecord(**payload))
+
+
+def pytest_sessionfinish(session, exitstatus):
+    if _is_xdist_worker or _friendly_collector is None:
+        return
+    _friendly_collector.records.sort(key=lambda record: record.nodeid)
+    write_report(
+        _friendly_collector,
+        ROOT / "reports" / "report.html",
+        browser=settings.browser,
+    )

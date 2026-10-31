@@ -91,13 +91,15 @@ class HomePage(BasePage):
         expect(self.menu_items.first).to_be_visible()
 
     def menu_item_texts(self) -> list[str]:
-        # Unique labels from the visible hamburger list (same view as the JSON)
+        # Labels from the visible hamburger panel (not a hidden clone).
+        # WebKit's inner_text is empty for rows below the fold, so read
+        # text_content. The expected JSON labels still have to be present.
         panel = self.visible_hamburger_panel()
         locators = panel.locator("a.hmenu-item")
         texts = []
         seen = set()
         for i in range(locators.count()):
-            text = " ".join(locators.nth(i).inner_text().split())
+            text = " ".join((locators.nth(i).text_content() or "").split())
             if text and text not in seen:
                 seen.add(text)
                 texts.append(text)

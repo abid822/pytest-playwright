@@ -56,6 +56,8 @@ MARKER_LABELS = {
     "automotive": "Automotive",
     "search": "Search",
     "language": "Language",
+    "ci_skip": "Skipped in CI",
+    "chromium_only": "Chromium baseline",
 }
 
 
@@ -154,7 +156,7 @@ def readable_error(longrepr) -> str:
     return (lines[-1] if lines else text)[:800]
 
 
-def write_report(collector: ReportCollector, path: Path) -> None:
+def write_report(collector: ReportCollector, path: Path, *, browser: str = "") -> None:
     path.parent.mkdir(exist_ok=True)
     records = collector.records
     passed = sum(1 for r in records if r.outcome == "passed")
@@ -178,6 +180,7 @@ def write_report(collector: ReportCollector, path: Path) -> None:
         pass_pct=pass_pct,
         cards=cards or '<p class="empty">No tests ran.</p>',
         fail_hidden="hidden" if failed == 0 else "",
+        browser=html.escape(browser or "chromium"),
     )
     path.write_text(html_doc, encoding="utf-8")
 
@@ -361,7 +364,7 @@ _TEMPLATE = """<!DOCTYPE html>
   <header class="hero">
     <div class="wrap">
       <h1>Amazon UI test report</h1>
-      <p>Plain-language results from the pytest-playwright suite. Each card is one customer-facing check on live Amazon.com.</p>
+      <p>Plain-language results from the pytest-playwright suite. Each card is one customer-facing check on live Amazon.com. Browser: {browser}.</p>
     </div>
   </header>
   <div class="wrap">

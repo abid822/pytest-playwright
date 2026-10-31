@@ -15,7 +15,12 @@ permissions:
 
 jobs:
   test:
+    name: tests (${{ matrix.browser }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -30,24 +35,25 @@ jobs:
       - name: Install Python dependencies
         run: pip install -r requirements.txt
 
-      - name: Install Playwright Chromium
-        run: playwright install --with-deps chromium
+      - name: Install Playwright browser
+        run: playwright install --with-deps ${{ matrix.browser }}
 
       - name: Run tests
         env:
           BASE_URL: https://www.amazon.com/
           HEADLESS: "true"
           SLOW_MO: "0"
+          BROWSER: ${{ matrix.browser }}
           BROWSER_CHANNEL: ""
           DEFAULT_TIMEOUT_MS: "15000"
           VIEWPORT_WIDTH: "1280"
           VIEWPORT_HEIGHT: "720"
-        run: pytest -m "not ci_skip" --reruns 1
+        run: pytest -n auto -m "not ci_skip" --reruns 1
 
       - name: Upload reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: reports
+          name: reports-${{ matrix.browser }}
           path: reports/
           if-no-files-found: warn

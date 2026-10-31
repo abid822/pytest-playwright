@@ -4,7 +4,7 @@ from pathlib import Path
 from PIL import Image, ImageFilter
 from pixelmatch.contrib.PIL import pixelmatch
 
-from config.settings import ROOT
+from config.settings import ROOT, report_png
 
 # Soften glyph edges so one baseline can be compared from macOS Chrome and
 # headless Chromium. A missing control or a shifted layout is still thousands
@@ -29,12 +29,10 @@ def compare_screenshot(
     *,
     max_mismatch_ratio: float = _MAX_MISMATCH_RATIO,
 ) -> None:
-    reports = ROOT / "reports"
-    reports.mkdir(exist_ok=True)
     baseline = _baseline_path(relative_baseline)
     baseline.parent.mkdir(parents=True, exist_ok=True)
-    actual = reports / f"{baseline.stem}_actual.png"
-    diff = reports / f"{baseline.stem}_diff.png"
+    actual = report_png(f"{baseline.stem}_actual")
+    diff = report_png(f"{baseline.stem}_diff")
 
     target = locator if locator is not None else page
     target.screenshot(path=str(actual))
