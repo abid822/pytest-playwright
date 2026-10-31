@@ -19,4 +19,9 @@ def test_add_2023_tesla_model_3_to_garage(automotive_page, search_results_page):
     automotive_page.search("seat covers")
     search_results_page.sort_by_price_low_to_high()
     search_results_page.add_first_result_to_cart()
-    automotive_page.expect_cart_not_empty()
+    automotive_page.expect_added_to_cart()
+    automotive_page.save_screenshot("seat_covers_added_to_cart")
+    # Step 7: Open the cart and confirm the item is listed
+    automotive_page.open_cart()
+    automotive_page.expect_cart_has_items()
+    automotive_page.save_screenshot("seat_covers_cart")

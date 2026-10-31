@@ -122,12 +122,18 @@ class AutomotivePage(HomePage):
         return shown
 
     def expect_vehicle_in_garage(self, year: str, make: str, model: str) -> None:
-        # Saving can bounce through Amazon's checkpoint page in headless
+        # Saving can bounce through Amazon's checkpoint after navigation starts
+        try:
+            self.page.wait_for_url(re.compile(r"checkpoint"), timeout=4000)
+        except Exception:
+            pass
         if "checkpoint" in self.page.url:
             self.dismiss_continue_shopping()
             button = self.page.get_by_role("button", name=re.compile(r"Continue", re.I))
             if button.count() and button.first.is_visible():
                 button.first.click()
+            self.page.goto("https://www.amazon.com/your-garage")
+        expect(self.page).to_have_url(re.compile(r"your-garage", re.I))
         # Ignore the hidden <option> nodes left in the add-vehicle form
         make_text = self.page.get_by_text(make, exact=False).locator("visible=true")
         year_text = self.page.get_by_text(year, exact=False).locator("visible=true")

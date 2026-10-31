@@ -1,8 +1,10 @@
 import re
 
+from pathlib import Path
+
 from playwright.sync_api import Page, expect
 
-from config.settings import settings
+from config.settings import ROOT, settings
 from locators.amazon_locators import AmazonHomeLocators
 
 
@@ -26,3 +28,11 @@ class BasePage:
             return
         button.first.click()
         expect(button).to_be_hidden()
+
+    def save_screenshot(self, name: str) -> Path:
+        reports = ROOT / "reports"
+        reports.mkdir(exist_ok=True)
+        path = reports / f"{name}.png"
+        self.page.screenshot(path=str(path), full_page=True)
+        print(f"\nScreenshot saved: {path}\n")
+        return path

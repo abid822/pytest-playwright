@@ -12,7 +12,7 @@ from pathlib import Path
 STORIES: dict[str, dict[str, str]] = {
     "test_add_2023_tesla_model_3_to_garage": {
         "title": "Tesla garage and cheapest seat covers",
-        "why": "Adds a 2023 Tesla Model 3 to Your Garage, searches seat covers, sorts low to high, and puts an in-stock item in the cart.",
+        "why": "Adds a 2023 Tesla Model 3 to Your Garage, searches seat covers, sorts low to high, adds an in-stock item, then opens the cart and screenshots it.",
     },
     "test_add_cheap_cable_to_cart": {
         "title": "Cheap USB-C cable in the cart",

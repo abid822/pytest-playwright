@@ -34,6 +34,7 @@ class HomePage(BasePage):
         self.menu_items = page.get_by_role("dialog").locator(AmazonTabsLocator.MENU_ITEMS)
         # Cart count in the header
         self.cart_count = page.locator("#nav-cart-count")
+        self.cart_link = page.locator("#nav-cart")
 
     def open_home(self) -> None:
         # Step 1: Load Amazon home
@@ -183,3 +184,39 @@ class HomePage(BasePage):
     def expect_cart_not_empty(self) -> None:
         # Header cart badge should not still be 0
         expect(self.cart_count).not_to_have_text(re.compile(r"^0$"))
+
+    def expect_added_to_cart(self) -> None:
+        # Amazon confirmation sheet, or the header count ticking up
+        added = self.page.get_by_text(re.compile(r"Added to (?:your )?cart", re.I))
+        try:
+            expect(added.first).to_be_visible(timeout=8000)
+        except AssertionError:
+            expect(self.cart_count).not_to_have_text(re.compile(r"^0$"))
+        skip = self.page.get_by_role(
+            "button", name=re.compile(r"No thanks|Skip|Decline coverage", re.I)
+        )
+        if skip.count() and skip.first.is_visible():
+            skip.first.click()
+
+    def open_cart(self) -> None:
+        # Overlay after add-to-cart can cover the header; go straight to the cart URL
+        go = self.page.get_by_role("link", name=re.compile(r"Go to Cart", re.I))
+        if go.count() and go.first.is_visible():
+            try:
+                go.first.click(timeout=3000)
+            except Exception:
+                self.page.goto("https://www.amazon.com/gp/cart/view.html")
+        else:
+            self.page.goto("https://www.amazon.com/gp/cart/view.html")
+        expect(self.page).to_have_url(re.compile(r"cart", re.I))
+
+    def expect_cart_has_items(self) -> None:
+        # Cart page must list at least one active item, not the empty-cart copy
+        empty = self.page.get_by_text(re.compile(r"Your Amazon Cart is empty", re.I))
+        if empty.count() and empty.first.is_visible():
+            raise AssertionError("Cart page is empty after add-to-cart")
+        items = self.page.locator(
+            "#sc-active-cart .sc-list-item, [data-name='Active Items'] .sc-list-item, "
+            ".sc-list-item-content"
+        )
+        expect(items.first).to_be_visible()
