@@ -1,41 +1,43 @@
 # pytest-playwright
 
-Pytest + Playwright UI tests for Amazon.com.
+Pytest and Playwright tests for Amazon.com. Each check is a page object calling locators: specs hold the steps, `pages/` holds the clicks and waits, and `locators/` holds the selectors. Visual checks compare a screenshot to a saved image with pixelmatch. Every run also writes a plain-language HTML report.
 
-Abidur Chowdhury built the original framework. Later work (pages, reports, garage/cart flows) was updated and tested with Cursor.
+Amazon is a live site. A captcha, a regional layout, or an experiment can fail a test when the code has not changed.
 
-Amazon is a live site. Captchas, geo, and A/B tests can fail a run even when the code is fine.
+## Layout
 
-## How the suite is organized
-
-One feature = **three layers**. Specs never hold CSS; locators never click.
-
-| Layer | Folder | Owns |
-| --- | --- | --- |
-| Spec | `tests/` | Ordered steps and assertions only |
-| Page | `pages/` | Clicks, typing, waits |
-| Locator | `locators/` | CSS / role selectors |
-
-Also:
-
-| Path | Role |
+| Path | Contents |
 | --- | --- |
-| `conftest.py` | Browser launch + page fixtures |
-| `config/settings.py` | Base URL, Chrome, timeouts (from `.env`) |
-| `data/` | JSON baselines (hamburger menu) |
-| `baselines/` | Pixelmatch images |
-| `utils/` | HTML dashboard + screenshot compare |
+| `config/` | `settings.py` — base URL, browser, timeouts, and viewport from the environment |
+| `locators/` | Selectors: `HomeLocators`, `SearchLocators`, `LanguageLocators`, `LoginLocators`, `NavLocators`, `AutomotiveLocators` |
+| `pages/` | Page objects: `BasePage`, `HomePage`, `LoginPage`, `SearchResultsPage`, `AutomotivePage` |
+| `tests/` | Pytest modules. Specs call page objects and leave selectors in `locators/` |
+| `utils/` | `friendly_report.py` (HTML summary) and `visual.py` (pixelmatch) |
+| `data/` | `hamburger_menu.json` — expected labels in the All menu |
+| `baselines/` | `amazon_login_form.png` for the sign-in visual check |
+| `assets/` | `style.css`, a pytest-html stylesheet kept in the repo. The debug report is self-contained and carries its own CSS |
+| `conftest.py` | Browser launch, page fixtures, and the report hooks |
+| `pytest.ini` | Test path, markers, and the pytest-html report |
+| `requirements.txt` | pytest, Playwright, pytest-html, Pillow, pixelmatch |
+| `.env.example` | Sample values for the variables below |
 
-```
-tests/test_login.py  →  pages/login_page.py  →  locators/login_locators.py
-tests/test_nav_*.py  →  pages/home_page.py   →  locators/nav_locators.py
-tests/test_cart.py   →  home + search pages  →  locators/home_locators.py
-tests/test_automotive.py → pages/automotive_page.py → locators/automotive_locators.py
-```
+`utils/visual.py` uses `baselines/amazon_login_form.<platform>.png` when that file exists (for example `amazon_login_form.darwin.png`). Otherwise it uses `baselines/amazon_login_form.png`.
+
+## Tests
+
+| File | What it covers |
+| --- | --- |
+| `tests/test_login.py` | Opens sign-in from the header, submits `invalidemailgmail.com`, and expects the invalid-email error plus the helper links. Markers: `login`, `smoke`. |
+| `tests/test_login_visual.py` | Opens sign-in and compares the login form to `baselines/amazon_login_form.png`. Marker: `login`. |
+| `tests/test_nav_tabs.py` | Opens home and checks that Best Sellers, Today's Deals, Prime, and Sell are in the top nav. Markers: `smoke`, `tabs`. |
+| `tests/test_nav_container.py` | Opens home, checks the top nav strip is visible, and checks that more than five tab links are present. Marker: `tabs`. |
+| `tests/test_nav_hamburger.py` | Opens the All menu, requires every label in `data/hamburger_menu.json` (extra live items are printed only), drags the scrollbar, and checks that Sign in is visible. Markers: `tabs`, `smoke`. |
+| `tests/test_cart.py` | Searches for `usb c charging cable`, adds the first result, and checks the header cart count is no longer 0. Markers: `cart`, `smoke`. |
+| `tests/test_search_pagination.py` | Searches for `hardcover notebook`, records organic titles on page 1, opens page 2, and checks the titles changed. Marker: `search`. |
+| `tests/test_automotive.py` | Opens Automotive, adds a 2023 Tesla Model 3 to Your Garage, logs whether "More vehicle information needed" is showing, searches seat covers, sorts Price: Low to High, adds the first result, opens the cart, and saves screenshots of both. Markers: `automotive`, `smoke`. |
+| `tests/test_language.py` | Opens language settings from the header EN control. English stays selected, Spanish is offered, and the form is left unsaved. Marker: `language`. |
 
 ## Setup
-
-Python 3.11+.
 
 ```bash
 python3 -m venv .venv
@@ -43,49 +45,49 @@ source .venv/bin/activate
 pip install -r requirements.txt
 playwright install chromium
 cp .env.example .env
+set -a && source .env && set +a
 ```
 
-Watch the browser: `HEADLESS=false`, `BROWSER_CHANNEL=chrome`, `SLOW_MO=250` in `.env`.
+On Windows, activate with `.venv\Scripts\activate`.
+
+`config/settings.py` reads the process environment. Export `.env` as above, or pass the variables on the command line (`HEADLESS=true pytest`).
+
+| Variable | Default | Role |
+| --- | --- | --- |
+| `BASE_URL` | `https://www.amazon.com/` | Site the tests open |
+| `BROWSER_CHANNEL` | `chrome` | Playwright browser channel. `chrome` uses installed Google Chrome. An empty value uses the Chromium from `playwright install chromium` |
+| `HEADLESS` | `false` | `1`, `true`, `yes`, or `on` hide the window. Any other value shows it |
+| `SLOW_MO` | `250` when headed, `0` when headless | Milliseconds to pause between Playwright actions |
+| `DEFAULT_TIMEOUT_MS` | `15000` | Timeout for actions and `expect` assertions |
+| `VIEWPORT_WIDTH` | `1280` | Browser width in pixels |
+| `VIEWPORT_HEIGHT` | `720` | Browser height in pixels |
 
 ## Run
 
+From the repository root, with the virtualenv active and the variables exported:
+
 ```bash
-pytest -v
-pytest tests/test_automotive.py -v
+pytest
+pytest tests/test_cart.py
+pytest tests/test_cart.py::test_add_cheap_cable_to_cart
 pytest -m smoke
-pytest -m login
-pytest -m tabs
-pytest -m cart
-pytest -m automotive
-pytest -m search
-pytest -m language
 ```
 
-After a run open `reports/report.html` (plain-language cards). Engineer dump: `reports/pytest-debug.html`.
+Headed is the default (`HEADLESS=false`): a visible Chrome window, with `SLOW_MO` at 250 ms unless you set it. Headless:
 
-## Add a test
+```bash
+HEADLESS=true pytest
+```
 
-1. Put selectors in `locators/<area>_locators.py` (`HomeLocators`, `NavLocators`, …).
-2. Put actions on the matching class in `pages/`.
-3. Put the scenario in `tests/test_<area>.py` with `# Step N:` comments and a pytest marker.
-4. Add a short story in `utils/friendly_report.py` `STORIES` so the HTML report reads in English.
+`pytest.ini` also defines `login`, `cart`, `tabs`, `automotive`, `search`, and `language`. `--strict-markers` is on, so an unknown marker fails collection.
 
-Do not import locators from tests.
+## Reports
 
-## Tests
+`reports/` is gitignored. A run writes:
 
-| File | What it checks |
-| --- | --- |
-| `test_login.py` | Bad email is rejected |
-| `test_login_visual.py` | Sign-in form vs baseline image |
-| `test_nav_tabs.py` | Best Sellers, Deals, Prime, Sell |
-| `test_nav_container.py` | Top nav strip exists |
-| `test_nav_hamburger.py` | All menu + scrollbar |
-| `test_cart.py` | Cheap cable in the cart |
-| `test_search_pagination.py` | Page 2 is a different product set |
-| `test_automotive.py` | Tesla garage, cheapest seat covers, cart screenshots |
-| `test_language.py` | EN selected, Spanish offered, not saved |
+- `reports/report.html` — plain-language cards (title, steps, outcome, and the error). A failed test includes a page screenshot when the browser can still capture one.
+- `reports/pytest-debug.html` — pytest-html output configured in `pytest.ini`.
 
-## Markers
+The automotive test also saves `reports/seat_covers_added_to_cart.png` and `reports/seat_covers_cart.png`.
 
-`smoke`, `login`, `cart`, `tabs`, `automotive`, `search`, `language` — see `pytest.ini`.
+On a visual mismatch, `utils/visual.py` writes `reports/amazon_login_form_actual.png` and `reports/amazon_login_form_diff.png`. If the baseline file is missing, that run saves the current screenshot as the baseline.
