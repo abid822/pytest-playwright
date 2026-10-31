@@ -3,6 +3,7 @@ import pytest
 from pages.search_results_page import SearchResultsPage
 
 
+@pytest.mark.desktop_only
 @pytest.mark.search
 def test_search_results_second_page_lists_different_products(
     search_results_page: SearchResultsPage,

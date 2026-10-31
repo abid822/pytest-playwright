@@ -36,12 +36,18 @@ class BasePage:
             pass
 
     def _bot_checkpoint_shown(self) -> bool:
-        # /checkpoint/ or a captcha page. The test must not try to pass these.
+        # /checkpoint/, a captcha, or the AI-agent interstitial.
+        # The test skips these. It does not click Continue.
         if re.search(r"/checkpoint/|captcha", self.page.url or "", re.I):
             return True
         try:
             captcha = self.page.locator(HomeLocators.CONTINUE_SHOPPING_BUTTON)
-            return captcha.count() > 0 and captcha.first.is_visible()
+            if captcha.count() > 0 and captcha.first.is_visible():
+                return True
+            wall = self.page.locator("h4").filter(
+                has_text=re.compile(r"unauthorized AI agent", re.I)
+            )
+            return wall.count() > 0 and wall.first.is_visible()
         except Exception:
             return False
 

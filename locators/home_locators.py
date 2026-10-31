@@ -5,8 +5,12 @@ class HomeLocators:
 
 
 class SearchLocators:
-    SEARCH_INPUT = "#twotabsearchtextbox"  # header search box
-    SEARCH_BUTTON = "#nav-search-submit-button"  # magnifying-glass submit
+    # Desktop uses the first id. Mobile web uses the second.
+    SEARCH_INPUT = "#twotabsearchtextbox, #nav-search-keywords"
+    SEARCH_BUTTON = (
+        "#nav-search-submit-button, "
+        "#nav-search-form .nav-search-submit input[type='submit']"
+    )
     PRODUCT_CARDS = "div[data-component-type='s-search-result']"  # one result row
     PRICE_WHOLE = ".a-price-whole"
     ADD_TO_CART_BUTTON = "button:has-text('Add to cart')"

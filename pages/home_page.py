@@ -38,8 +38,8 @@ class HomePage(BasePage):
     def __init__(self, page: Page) -> None:
         super().__init__(page)
         # Search box in the header
-        self.search_input = page.locator(SearchLocators.SEARCH_INPUT)
-        self.search_button = page.locator(SearchLocators.SEARCH_BUTTON)
+        self.search_input = page.locator(SearchLocators.SEARCH_INPUT).first
+        self.search_button = page.locator(SearchLocators.SEARCH_BUTTON).first
         # Top navigation strip (Best Sellers, Prime, ...)
         self.nav_container = page.locator(NavLocators.NAV_CONTAINER)
         self.tab_links = page.locator(NavLocators.ALL_TABS_LINKS)
@@ -232,6 +232,10 @@ class HomePage(BasePage):
             return False
 
     def open_language_settings(self) -> None:
+        # Mobile web puts language in the footer, not the desktop EN flyout.
+        if self.language_control.count() == 0 or not self.language_control.is_visible():
+            self._open_mobile_language_settings()
+            return
         # Step 1: Header language control is on screen and can be clicked.
         # WebKit sometimes gives the inner link a zero box; the wrapper is the fallback.
         expect(self.language_control).to_be_visible()
@@ -249,6 +253,25 @@ class HomePage(BasePage):
         except Exception:
             if not href:
                 raise
+        self.wait_for_page_load()
+        self.dismiss_continue_shopping()
+        if not self._language_form_ready() and href:
+            if href.startswith("/"):
+                href = "https://www.amazon.com" + href
+            self.page.goto(href, wait_until="domcontentloaded")
+            self.wait_for_page_load()
+            self.dismiss_continue_shopping()
+        expect(self.page).to_have_url(re.compile(r"customer-preferences/edit", re.I))
+
+    def _open_mobile_language_settings(self) -> None:
+        # Footer control on the mobile site. Same preferences form, nothing is saved.
+        link = self.page.get_by_role(
+            "link",
+            name=re.compile(r"Choose a language for shopping", re.I),
+        )
+        expect(link.first).to_be_visible()
+        href = link.first.get_attribute("href") or ""
+        link.first.click()
         self.wait_for_page_load()
         self.dismiss_continue_shopping()
         if not self._language_form_ready() and href:

@@ -1,10 +1,18 @@
 import base64
+import os
+import re
 from dataclasses import asdict
 
 import pytest
+from playwright.sync_api import Error as PlaywrightError
 from playwright.sync_api import expect, sync_playwright
 
-from config.settings import ROOT, settings
+from config.settings import (
+    ROOT,
+    browser_context_options,
+    normalize_device,
+    settings,
+)
 from pages.automotive_page import AutomotivePage
 from pages.home_page import HomePage
 from pages.login_page import LoginPage
@@ -37,18 +45,63 @@ def _launch_browser(playwright):
     return browser_type.launch(**launch_args)
 
 
+def _context_options(playwright) -> dict:
+    options = browser_context_options(
+        settings.device,
+        settings.browser,
+        playwright.devices,
+    )
+    options["ignore_https_errors"] = True
+    return options
+
+
+_TRACE_NAME = re.compile(r"[^A-Za-z0-9_.-]+")
+
+
+def _trace_zip(test_name: str):
+    """test-results/traces/<test-name>.<worker-id>.zip. xdist-safe."""
+    worker = os.environ.get("PYTEST_XDIST_WORKER", "").strip() or "local"
+    safe = _TRACE_NAME.sub("_", test_name).strip("._") or "test"
+    return ROOT / "test-results" / "traces" / f"{safe}.{worker}.zip"
+
+
+def _start_tracing(context) -> None:
+    # A leftover trace from an interrupted test would make start() fail.
+    try:
+        context.tracing.start(screenshots=True, snapshots=True, sources=True)
+    except PlaywrightError:
+        context.tracing.stop()
+        context.tracing.start(screenshots=True, snapshots=True, sources=True)
+
+
+def _stop_tracing(context, test_name: str, *, failed: bool) -> None:
+    path = _trace_zip(test_name)
+    if failed:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        context.tracing.stop(path=path)
+        return
+    try:
+        context.tracing.stop()
+    except PlaywrightError:
+        return
+    if path.is_file():
+        path.unlink()
+
+
+def _outcome_failed(node) -> bool:
+    for phase in ("setup", "call"):
+        report = getattr(node, f"rep_{phase}", None)
+        if report is not None and report.failed:
+            return True
+    return False
+
+
 @pytest.fixture(scope="session")
 def browser_context_managed():
     (ROOT / "reports").mkdir(exist_ok=True)
     with sync_playwright() as playwright:
         browser = _launch_browser(playwright)
-        context = browser.new_context(
-            viewport={
-                "width": settings.viewport_width,
-                "height": settings.viewport_height,
-            },
-            ignore_https_errors=True,
-        )
+        context = browser.new_context(**_context_options(playwright))
         context.set_default_timeout(settings.default_timeout_ms)
         expect.set_options(timeout=settings.default_timeout_ms)
         yield context
@@ -58,10 +111,21 @@ def browser_context_managed():
 
 @pytest.fixture
 def sb_page(browser_context_managed, request):
-    page = browser_context_managed.new_page()
+    context = browser_context_managed
+    _start_tracing(context)
+    page = context.new_page()
     request.node.page = page
-    yield page
-    page.close()
+    try:
+        yield page
+    finally:
+        try:
+            _stop_tracing(
+                context,
+                request.node.name,
+                failed=_outcome_failed(request.node),
+            )
+        finally:
+            page.close()
 
 
 @pytest.fixture
@@ -90,18 +154,42 @@ _friendly_collector: ReportCollector | None = None
 _is_xdist_worker = False
 
 
+def pytest_addoption(parser):
+    parser.addoption(
+        "--device",
+        default="desktop",
+        help="Device profile: desktop (1280x720) or mobile (iPhone 14).",
+    )
+
+
 def pytest_configure(config):
     global _friendly_collector, _is_xdist_worker
+    try:
+        settings.device = normalize_device(config.getoption("--device"))
+    except ValueError as exc:
+        raise pytest.UsageError(str(exc)) from exc
     (ROOT / "reports").mkdir(exist_ok=True)
     _is_xdist_worker = hasattr(config, "workerinput")
     _friendly_collector = ReportCollector()
     config._friendly_report = _friendly_collector
 
 
+def pytest_collection_modifyitems(config, items):
+    if normalize_device(config.getoption("--device")) != "mobile":
+        return
+    skip = pytest.mark.skip(
+        reason="desktop-only test does not run with --device mobile"
+    )
+    for item in items:
+        if item.get_closest_marker("desktop_only"):
+            item.add_marker(skip)
+
+
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_makereport(item, call):
     outcome = yield
     report = outcome.get_result()
+    setattr(item, f"rep_{report.when}", report)
     extras = getattr(report, "extras", [])
     screenshot_b64 = ""
     page = getattr(item, "page", None)

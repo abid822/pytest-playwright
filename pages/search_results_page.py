@@ -54,10 +54,10 @@ class SearchResultsPage(BasePage):
         # Step 2: Clear the continue-shopping check when it is shown
         self._dismiss_continue_shopping()
         # Step 3: Type the query and submit
-        search = self.page.locator(SearchLocators.SEARCH_INPUT)
+        search = self.page.locator(SearchLocators.SEARCH_INPUT).first
         expect(search).to_be_visible()
         search.fill(query)
-        self.page.locator(SearchLocators.SEARCH_BUTTON).click()
+        self.page.locator(SearchLocators.SEARCH_BUTTON).first.click()
         # Step 4: Wait until result cards are on the page
         expect(self.page).to_have_url(re.compile(r"[?&]k=", re.I))
         expect(self.results.first).to_be_visible()

@@ -1,6 +1,7 @@
 import pytest
 
 
+@pytest.mark.desktop_only
 @pytest.mark.tabs
 def test_nav_container(home_page):
     # Step 1: Open Amazon home

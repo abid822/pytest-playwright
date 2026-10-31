@@ -1,6 +1,7 @@
 import pytest
 
 
+@pytest.mark.desktop_only
 @pytest.mark.smoke
 @pytest.mark.tabs
 def test_nav_tabs(home_page):

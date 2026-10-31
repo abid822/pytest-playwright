@@ -5,6 +5,7 @@ import pytest
 from playwright.sync_api import expect
 
 
+@pytest.mark.desktop_only
 @pytest.mark.tabs
 @pytest.mark.smoke
 def test_nav_hamburger(home_page):

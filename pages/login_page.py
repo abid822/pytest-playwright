@@ -32,6 +32,10 @@ class LoginPage(HomePage):
     def open_sign_in(self) -> None:
         # Step 1: Open Amazon home
         self.open_home()
+        # Mobile header has a Sign in link. Desktop uses Account & Lists.
+        if self.account_list.count() == 0 or not self.account_list.is_visible():
+            self._open_mobile_sign_in()
+            return
         # Step 2: Hover Account & Lists and click Sign in
         href = self.account_list.get_attribute("href") or ""
         box = self.account_list.bounding_box()
@@ -55,6 +59,17 @@ class LoginPage(HomePage):
             assert href, "Sign in control has no href"
             self.page.goto(href)
             expect(self.email).to_be_visible()
+
+    def _open_mobile_sign_in(self) -> None:
+        # Header link only. The footer also has a Sign in link.
+        link = self.page.locator("#nav-main").get_by_role(
+            "link", name=re.compile(r"^Sign in\b", re.I)
+        )
+        expect(link.first).to_be_visible()
+        link.first.click()
+        self.wait_for_page_load()
+        self.dismiss_continue_shopping()
+        expect(self.email).to_be_visible()
 
     def submit_email(self, email: str) -> None:
         # Step 1: Enter email / phone
