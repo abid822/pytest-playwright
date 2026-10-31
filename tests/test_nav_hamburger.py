@@ -12,7 +12,7 @@ def test_nav_hamburger(home_page):
     home_page.open_home()
     home_page.open_hamburger_menu()
 
-    # Step 2: JSON items must still be present; extra Amazon items are printed, not failed
+    # Step 2: Core labels must be present. Other JSON labels and extra Amazon items are printed, not failed
     data_file = Path(__file__).parent.parent / "data" / "hamburger_menu.json"
     expected = json.loads(data_file.read_text())
     home_page.expect_menu_contains(expected)

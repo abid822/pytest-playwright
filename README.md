@@ -24,7 +24,7 @@ Amazon is a live site. A captcha, a regional layout, or an experiment can fail a
 | `pages/` | Page objects: `BasePage`, `HomePage`, `LoginPage`, `SearchResultsPage`, `AutomotivePage` |
 | `tests/` | Pytest modules. Specs call page objects and leave selectors in `locators/` |
 | `utils/` | `friendly_report.py` (HTML summary) and `visual.py` (pixelmatch) |
-| `data/` | `hamburger_menu.json` — expected labels in the All menu |
+| `data/` | `hamburger_menu.json` — All menu labels. The test asserts a stable core set and warns on the rest |
 | `baselines/` | `amazon_login_form.png` for the sign-in visual check |
 | `assets/` | `style.css`, a pytest-html stylesheet kept in the repo. The debug report is self-contained and carries its own CSS |
 | `conftest.py` | Browser launch, page fixtures, and the report hooks |
@@ -42,7 +42,7 @@ Amazon is a live site. A captcha, a regional layout, or an experiment can fail a
 | `tests/test_login_visual.py` | Opens sign-in and compares the login form to `baselines/amazon_login_form.png`. Markers: `login`, `chromium_only`. Skipped on Firefox and WebKit because the baseline is a Chromium screenshot. |
 | `tests/test_nav_tabs.py` | Opens home and checks that Best Sellers, Today's Deals, Prime, and Sell are in the top nav. Markers: `smoke`, `tabs`. |
 | `tests/test_nav_container.py` | Opens home, checks the top nav strip is visible, and checks that more than five tab links are present. Marker: `tabs`. |
-| `tests/test_nav_hamburger.py` | Opens the All menu, requires every label in `data/hamburger_menu.json` (extra live items are printed only), drags the scrollbar, and checks that Sign in is visible. Markers: `tabs`, `smoke`. |
+| `tests/test_nav_hamburger.py` | Opens the All menu, requires a stable core set of labels (other JSON labels and extra live items are printed only), drags the scrollbar, and checks that Sign in is visible. Markers: `tabs`, `smoke`. |
 | `tests/test_cart.py` | Searches for `usb c charging cable`, adds the first result, and checks the header cart count is no longer 0. Markers: `cart`, `smoke`. |
 | `tests/test_search_pagination.py` | Searches for `hardcover notebook`, records organic titles on page 1, opens page 2, and checks the titles changed. Marker: `search`. |
 | `tests/test_automotive.py` | Opens Automotive, adds a 2023 Tesla Model 3 to Your Garage, logs whether "More vehicle information needed" is showing, searches seat covers, sorts Price: Low to High, adds the first result, opens the cart, and saves screenshots of both. Markers: `automotive`, `smoke`, `ci_skip`. |
