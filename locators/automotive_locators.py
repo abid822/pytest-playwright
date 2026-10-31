@@ -1,4 +1,4 @@
-class AmazonAutomotiveLocators:
+class AutomotiveLocators:
     AUTOMOTIVE_NAV = "a[href*='automotive']"  # top nav Automotive
     YOUR_GARAGE = "a[href*='your-garage']"  # Your Garage
     ADD_VEHICLE = "#attribute-selection-accordian-row a.a-accordion-row"  # Select new vehicle accordion

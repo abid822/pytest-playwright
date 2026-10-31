@@ -1,4 +1,4 @@
-class AmazonTabsLocator:
+class NavLocators:
     NAV_CONTAINER = "#nav-xshop-container"  # top tab strip
     ALL_TABS_LINKS = "#nav-xshop a"  # links inside that strip
     HAMBURGER_MENU = "#nav-hamburger-menu"  # All button

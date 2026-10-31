@@ -5,7 +5,7 @@ from pathlib import Path
 from playwright.sync_api import Page, expect
 
 from config.settings import ROOT, settings
-from locators.amazon_locators import AmazonHomeLocators
+from locators.home_locators import HomeLocators
 
 
 class BasePage:
@@ -23,7 +23,7 @@ class BasePage:
         self.dismiss_continue_shopping()
 
     def dismiss_continue_shopping(self) -> None:
-        button = self.page.locator(AmazonHomeLocators.CONTINUE_SHOPPING_BUTTON)
+        button = self.page.locator(HomeLocators.CONTINUE_SHOPPING_BUTTON)
         if button.count() == 0 or not button.first.is_visible():
             return
         button.first.click()

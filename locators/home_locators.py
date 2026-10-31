@@ -1,10 +1,10 @@
-class AmazonHomeLocators:
+class HomeLocators:
     URL = "https://www.amazon.com/"
     # Bot check Amazon shows before the storefront on a fresh session
     CONTINUE_SHOPPING_BUTTON = "form[action*='validateCaptcha'] button"
 
 
-class AmazonSearchLocators:
+class SearchLocators:
     SEARCH_INPUT = "#twotabsearchtextbox"  # header search box
     SEARCH_BUTTON = "#nav-search-submit-button"  # magnifying-glass submit
     PRODUCT_CARDS = "div[data-component-type='s-search-result']"  # one result row
@@ -17,7 +17,7 @@ class AmazonSearchLocators:
     PAGINATION_SELECTED = "span.s-pagination-selected"  # current page number
 
 
-class AmazonLanguageLocators:
+class LanguageLocators:
     # Header "EN" control. The id is on a wrapper div; the link is inside it.
     HEADER_CONTROL = "#icp-nav-flyout"
     ENGLISH_RADIO = "input[name='lop'][value='en_US']"

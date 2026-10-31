@@ -7,7 +7,7 @@ from playwright.sync_api import expect
 
 @pytest.mark.tabs
 @pytest.mark.smoke
-def test_amazon_hamburger_menu(home_page):
+def test_nav_hamburger(home_page):
     # Step 1: Open Amazon and click the hamburger / All menu
     home_page.open_home()
     home_page.open_hamburger_menu()

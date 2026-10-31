@@ -4,7 +4,7 @@ from utils.visual import compare_screenshot
 
 
 @pytest.mark.login
-def test_amazon_login_page_pixelmatch(login_page, sb_page):
+def test_login_form_visual(login_page, sb_page):
     # Step 1: Open the sign-in form
     login_page.open_sign_in()
     # Step 2: Compare the form screenshot to the baseline image

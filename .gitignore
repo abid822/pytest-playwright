@@ -9,3 +9,4 @@ user_data_*/
 reports/
 report.html
 .DS_Store
+.cursor/

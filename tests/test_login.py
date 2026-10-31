@@ -3,7 +3,7 @@ import pytest
 
 @pytest.mark.login
 @pytest.mark.smoke
-def test_amazon_invalid_login(login_page):
+def test_invalid_login(login_page):
     # Step 1: Open the sign-in form from the header
     login_page.open_sign_in()
     # Step 2: Submit a bad email (missing @)

@@ -2,8 +2,8 @@ import re
 
 from playwright.sync_api import Page, expect
 
-from locators.amazon_locators import AmazonLanguageLocators, AmazonSearchLocators
-from locators.amazon_tabs_locator import AmazonTabsLocator
+from locators.home_locators import LanguageLocators, SearchLocators
+from locators.nav_locators import NavLocators
 from pages.base_page import BasePage
 
 # Tabs we always expect on the top nav (Amazon hides others by region)
@@ -21,22 +21,22 @@ class HomePage(BasePage):
     def __init__(self, page: Page) -> None:
         super().__init__(page)
         # Search box in the header
-        self.search_input = page.locator(AmazonSearchLocators.SEARCH_INPUT)
-        self.search_button = page.locator(AmazonSearchLocators.SEARCH_BUTTON)
+        self.search_input = page.locator(SearchLocators.SEARCH_INPUT)
+        self.search_button = page.locator(SearchLocators.SEARCH_BUTTON)
         # Top navigation strip (Best Sellers, Prime, ...)
-        self.nav_container = page.locator(AmazonTabsLocator.NAV_CONTAINER)
-        self.tab_links = page.locator(AmazonTabsLocator.ALL_TABS_LINKS)
+        self.nav_container = page.locator(NavLocators.NAV_CONTAINER)
+        self.tab_links = page.locator(NavLocators.ALL_TABS_LINKS)
         # All / hamburger button that opens the left menu
         self.hamburger = page.get_by_role(
             "button", name=re.compile(r"Open All Categories Menu", re.I)
-        ).or_(page.locator(AmazonTabsLocator.HAMBURGER_MENU))
+        ).or_(page.locator(NavLocators.HAMBURGER_MENU))
         # Links inside the open hamburger dialog
-        self.menu_items = page.get_by_role("dialog").locator(AmazonTabsLocator.MENU_ITEMS)
+        self.menu_items = page.get_by_role("dialog").locator(NavLocators.MENU_ITEMS)
         # Cart count in the header
         self.cart_count = page.locator("#nav-cart-count")
         self.cart_link = page.locator("#nav-cart")
         # Header language control (EN). The clickable link sits inside the wrapper.
-        self.language_control = page.locator(AmazonLanguageLocators.HEADER_CONTROL)
+        self.language_control = page.locator(LanguageLocators.HEADER_CONTROL)
         self.language_link = self.language_control.locator("a").first
 
     def open_home(self) -> None:
@@ -223,8 +223,8 @@ class HomePage(BasePage):
         # Do not save — that would switch the shared browser session.
         # Use the radio roles. A hidden header span also contains "English - EN".
         expect(self.page.get_by_role("heading", name=re.compile(r"Language Settings", re.I))).to_be_visible()
-        english = self.page.locator(AmazonLanguageLocators.ENGLISH_RADIO)
-        spanish = self.page.locator(AmazonLanguageLocators.SPANISH_RADIO)
+        english = self.page.locator(LanguageLocators.ENGLISH_RADIO)
+        spanish = self.page.locator(LanguageLocators.SPANISH_RADIO)
         expect(english).to_be_checked()
         expect(spanish).not_to_be_checked()
         expect(english).to_have_accessible_name(re.compile(r"English\s*-\s*EN", re.I))

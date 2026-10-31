@@ -2,7 +2,7 @@ import pytest
 
 
 @pytest.mark.tabs
-def test_amazon_tabs_containers(home_page):
+def test_nav_container(home_page):
     # Step 1: Open Amazon home
     home_page.open_home()
     # Step 2: Top nav container is visible

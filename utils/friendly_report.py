@@ -18,23 +18,23 @@ STORIES: dict[str, dict[str, str]] = {
         "title": "Cheap USB-C cable in the cart",
         "why": "Searches for a USB-C charging cable and confirms the header cart is no longer empty.",
     },
-    "test_amazon_tabs_containers": {
+    "test_nav_container": {
         "title": "Top navigation is on the page",
         "why": "Opens Amazon home and checks that the header tab strip is visible with more than a few links.",
     },
-    "test_amazon_hamburger_menu": {
+    "test_nav_hamburger": {
         "title": "All menu list and scrollbar",
         "why": "Opens the hamburger menu, checks expected departments still exist, then drags the scrollbar so Sign in comes into view.",
     },
-    "test_amazon_tabs": {
+    "test_nav_tabs": {
         "title": "Core store tabs",
         "why": "Confirms Best Sellers, Today's Deals, Prime, and Sell are in the top nav.",
     },
-    "test_amazon_invalid_login": {
+    "test_invalid_login": {
         "title": "Bad email is rejected",
         "why": "Opens sign-in, submits an email with no @, and expects the error plus helper links.",
     },
-    "test_amazon_login_page_pixelmatch": {
+    "test_login_form_visual": {
         "title": "Sign-in form still looks the same",
         "why": "Compares the live sign-in card to the baseline screenshot. A fail means Amazon changed the layout.",
     },

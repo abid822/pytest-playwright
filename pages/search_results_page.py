@@ -2,7 +2,7 @@ import re
 
 from playwright.sync_api import Page, expect
 
-from locators.amazon_locators import AmazonHomeLocators, AmazonSearchLocators
+from locators.home_locators import HomeLocators, SearchLocators
 from pages.base_page import BasePage
 
 
@@ -12,10 +12,10 @@ class SearchResultsPage(BasePage):
     def __init__(self, page: Page) -> None:
         super().__init__(page)
         # Each product card in the results grid
-        self.results = page.locator(AmazonSearchLocators.PRODUCT_CARDS)
-        self.sort_select = page.locator(AmazonSearchLocators.SORT_SELECT)
-        self.continue_shopping = page.locator(AmazonHomeLocators.CONTINUE_SHOPPING_BUTTON)
-        self.selected_page = page.locator(AmazonSearchLocators.PAGINATION_SELECTED)
+        self.results = page.locator(SearchLocators.PRODUCT_CARDS)
+        self.sort_select = page.locator(SearchLocators.SORT_SELECT)
+        self.continue_shopping = page.locator(HomeLocators.CONTINUE_SHOPPING_BUTTON)
+        self.selected_page = page.locator(SearchLocators.PAGINATION_SELECTED)
 
     def sort_by_price_low_to_high(self) -> None:
         # Step 1: Click the visible Sort by control next to the hidden native <select>
@@ -47,7 +47,7 @@ class SearchResultsPage(BasePage):
 
     def _dismiss_continue_shopping(self) -> None:
         # Fresh sessions sometimes land on a continue-shopping check
-        search = self.page.locator(AmazonSearchLocators.SEARCH_INPUT)
+        search = self.page.locator(SearchLocators.SEARCH_INPUT)
         if search.count() and search.first.is_visible():
             return
         if self.continue_shopping.count() == 0:
@@ -61,10 +61,10 @@ class SearchResultsPage(BasePage):
         # Step 2: Clear the continue-shopping check when it is shown
         self._dismiss_continue_shopping()
         # Step 3: Type the query and submit
-        search = self.page.locator(AmazonSearchLocators.SEARCH_INPUT)
+        search = self.page.locator(SearchLocators.SEARCH_INPUT)
         expect(search).to_be_visible()
         search.fill(query)
-        self.page.locator(AmazonSearchLocators.SEARCH_BUTTON).click()
+        self.page.locator(SearchLocators.SEARCH_BUTTON).click()
         # Step 4: Wait until result cards are on the page
         expect(self.page).to_have_url(re.compile(r"[?&]k=", re.I))
         expect(self.results.first).to_be_visible()
@@ -77,7 +77,7 @@ class SearchResultsPage(BasePage):
             card = self.results.nth(i)
             if self._skip_card(card):
                 continue
-            heading = card.locator(AmazonSearchLocators.RESULT_TITLE)
+            heading = card.locator(SearchLocators.RESULT_TITLE)
             if heading.count() == 0:
                 continue
             text = " ".join(heading.first.inner_text().split())
@@ -91,7 +91,7 @@ class SearchResultsPage(BasePage):
 
     def go_to_results_page(self, number: int) -> None:
         # Step 1: Click the page number in the pagination strip
-        link = self.page.locator(AmazonSearchLocators.PAGINATION_PAGE_LINK.format(number))
+        link = self.page.locator(SearchLocators.PAGINATION_PAGE_LINK.format(number))
         expect(link).to_be_visible()
         link.scroll_into_view_if_needed()
         link.click()

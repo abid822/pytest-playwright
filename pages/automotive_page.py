@@ -2,7 +2,7 @@ import re
 
 from playwright.sync_api import Page, expect
 
-from locators.amazon_automotive_locators import AmazonAutomotiveLocators
+from locators.automotive_locators import AutomotiveLocators
 from pages.home_page import HomePage
 
 
@@ -17,15 +17,15 @@ class AutomotivePage(HomePage):
             "button",
             name=re.compile(r"Add your first vehicle|Add a new vehicle|Add a vehicle", re.I),
         )
-        self.select_new_vehicle = page.locator(AmazonAutomotiveLocators.ADD_VEHICLE)
-        self.vehicle_type = page.locator(AmazonAutomotiveLocators.VEHICLE_TYPE)
-        self.year = page.locator(AmazonAutomotiveLocators.YEAR)
-        self.make = page.locator(AmazonAutomotiveLocators.MAKE)
-        self.model = page.locator(AmazonAutomotiveLocators.MODEL)
-        self.save = page.locator(AmazonAutomotiveLocators.SAVE)
-        self.success = page.locator(AmazonAutomotiveLocators.SUCCESS)
+        self.select_new_vehicle = page.locator(AutomotiveLocators.ADD_VEHICLE)
+        self.vehicle_type = page.locator(AutomotiveLocators.VEHICLE_TYPE)
+        self.year = page.locator(AutomotiveLocators.YEAR)
+        self.make = page.locator(AutomotiveLocators.MAKE)
+        self.model = page.locator(AutomotiveLocators.MODEL)
+        self.save = page.locator(AutomotiveLocators.SAVE)
+        self.success = page.locator(AutomotiveLocators.SUCCESS)
         self.more_info_needed = page.get_by_text(
-            re.compile(AmazonAutomotiveLocators.MORE_INFO_NEEDED, re.I)
+            re.compile(AutomotiveLocators.MORE_INFO_NEEDED, re.I)
         )
 
     def open_automotive(self) -> None:

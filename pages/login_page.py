@@ -2,7 +2,7 @@ import re
 
 from playwright.sync_api import Page, expect
 
-from locators.amazon_login_pg_locators import AmazonLoginLocators
+from locators.login_locators import LoginLocators
 from pages.home_page import HomePage
 
 
@@ -12,15 +12,15 @@ class LoginPage(HomePage):
     def __init__(self, page: Page) -> None:
         super().__init__(page)
         # Account menu in the header
-        self.account_list = page.locator(AmazonLoginLocators.ACCOUNT_LIST)
+        self.account_list = page.locator(LoginLocators.ACCOUNT_LIST)
         # Sign in button inside the account flyout
-        self.sign_in = page.locator(AmazonLoginLocators.SIGN_IN_BUTTON)
+        self.sign_in = page.locator(LoginLocators.SIGN_IN_BUTTON)
         # Email / mobile field on the login form
-        self.email = page.locator(AmazonLoginLocators.ENTER_MOBILE_OR_EMAIL)
+        self.email = page.locator(LoginLocators.ENTER_MOBILE_OR_EMAIL)
         # Continue (span#continue wraps an input on Amazon)
-        self.continue_btn = page.locator(AmazonLoginLocators.CONTINUE_BUTTON).first
+        self.continue_btn = page.locator(LoginLocators.CONTINUE_BUTTON).first
         # Invalid email / auth error banner
-        self.error = page.locator(AmazonLoginLocators.Invalid_EMAIL_alert)
+        self.error = page.locator(LoginLocators.INVALID_EMAIL_ALERT)
         self.agreement = page.get_by_text(re.compile(r"By continuing", re.I))
         self.need_help = page.get_by_role("button", name=re.compile(r"Need help", re.I)).or_(
             page.get_by_text(re.compile(r"Need help", re.I))
