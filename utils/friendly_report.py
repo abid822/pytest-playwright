@@ -24,7 +24,7 @@ STORIES: dict[str, dict[str, str]] = {
     },
     "test_nav_hamburger": {
         "title": "All menu list and scrollbar",
-        "why": "Opens the hamburger menu, checks expected departments still exist, then drags the scrollbar so Sign in comes into view.",
+        "why": "Opens the hamburger menu, checks the core departments are still there, then drags the scrollbar so Sign in comes into view.",
     },
     "test_nav_tabs": {
         "title": "Core store tabs",
