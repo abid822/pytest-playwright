@@ -159,10 +159,9 @@ class SearchResultsPage(BasePage):
         control.click()
 
     def _settle_after_add(self) -> None:
-        # The click may ajax-update the badge or navigate into the shopping gate.
+        # The click may ajax-update the badge or land on a bot checkpoint.
         self.wait_for_page_load()
-        if self._shopping_gate_present():
-            self.dismiss_continue_shopping()
+        self.dismiss_continue_shopping()
         try:
             expect(self.page.locator("#nav-cart-count")).not_to_have_text(
                 re.compile(r"^0$"), timeout=5000
@@ -171,7 +170,7 @@ class SearchResultsPage(BasePage):
             pass
 
     def add_first_result_to_cart(self) -> None:
-        # Step 1: Results are on screen. Clear a gate before clicking Add to cart.
+        # Step 1: Results are on screen. A bot checkpoint skips the test.
         self.wait_for_page_load()
         self.dismiss_continue_shopping()
         expect(self.results.first).to_be_visible()
@@ -185,7 +184,7 @@ class SearchResultsPage(BasePage):
             self._settle_after_add()
             if self._header_cart_count() > 0:
                 return
-            # WebKit can send the click to the shopping gate and leave the badge at 0.
+            # The add click can leave the results page. Go back and try once more.
             if attempt == 0 and search_url and not re.search(r"[?&]k=", self.page.url):
                 self.page.goto(search_url, wait_until="domcontentloaded")
                 self.wait_for_page_load()
