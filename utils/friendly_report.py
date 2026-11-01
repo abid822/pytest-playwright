@@ -46,6 +46,10 @@ STORIES: dict[str, dict[str, str]] = {
         "title": "Language settings offer English and Spanish",
         "why": "Opens the header language control and checks that English is selected, Spanish is available, and the choice is not saved.",
     },
+    "test_best_sellers_electronics_shows_number_one": {
+        "title": "Best Sellers Electronics has a #1 product",
+        "why": "Opens Best Sellers, checks core departments, and opens Electronics to see the ranked #1 product.",
+    },
 }
 
 MARKER_LABELS = {
@@ -56,6 +60,7 @@ MARKER_LABELS = {
     "automotive": "Automotive",
     "search": "Search",
     "language": "Language",
+    "bestsellers": "Best Sellers",
     "ci_skip": "Skipped in CI",
     "chromium_only": "Chromium baseline",
     "desktop_only": "Desktop only",
