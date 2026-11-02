@@ -50,6 +50,10 @@ STORIES: dict[str, dict[str, str]] = {
         "title": "Best Sellers Electronics has a #1 product",
         "why": "Opens Best Sellers, checks core departments, and opens Electronics to see the ranked #1 product.",
     },
+    "test_customer_service_shipping_topic_lists_articles": {
+        "title": "Customer Service shipping help",
+        "why": "Opens Customer Service, checks the help search and core topics, then opens Shipping and Delivery and checks the articles.",
+    },
 }
 
 MARKER_LABELS = {
@@ -61,6 +65,7 @@ MARKER_LABELS = {
     "search": "Search",
     "language": "Language",
     "bestsellers": "Best Sellers",
+    "help": "Customer Service",
     "ci_skip": "Skipped in CI",
     "chromium_only": "Chromium baseline",
     "desktop_only": "Desktop only",
