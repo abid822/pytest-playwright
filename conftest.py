@@ -16,6 +16,7 @@ from config.settings import (
 from pages.automotive_page import AutomotivePage
 from pages.bestsellers_page import BestSellersPage
 from pages.customer_service_page import CustomerServicePage
+from pages.deals_page import DealsPage
 from pages.home_page import HomePage
 from pages.login_page import LoginPage
 from pages.search_results_page import SearchResultsPage
@@ -158,6 +159,11 @@ def bestsellers_page(sb_page) -> BestSellersPage:
 @pytest.fixture
 def customer_service_page(sb_page) -> CustomerServicePage:
     return CustomerServicePage(sb_page)
+
+
+@pytest.fixture
+def deals_page(sb_page) -> DealsPage:
+    return DealsPage(sb_page)
 
 
 # Workers record results on the pytest report. The controller (or a run
