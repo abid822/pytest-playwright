@@ -4,4 +4,6 @@ class LoginLocators:
     ENTER_MOBILE_OR_EMAIL = "#ap_email_login, #ap_email, input[type='email']"
     # Amazon wraps Continue in span#continue; the clickable control is the inner input
     CONTINUE_BUTTON = "#continue input, #continue button, input#continue"
+    PASSWORD = "#ap_password"
+    SIGN_IN_SUBMIT = "#signInSubmit"
     INVALID_EMAIL_ALERT = "#invalid-email-alert, #auth-error-message-box, .a-alert-error"

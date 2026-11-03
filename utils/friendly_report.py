@@ -34,6 +34,10 @@ STORIES: dict[str, dict[str, str]] = {
         "title": "Bad email is rejected",
         "why": "Opens sign-in, submits an email with no @, and expects the error plus helper links.",
     },
+    "test_invalid_credentials": {
+        "title": "Fake username and password are rejected",
+        "why": "Opens sign-in and submits one fake pair from data/login_credentials.json. Amazon should reject the username, or the password when it asks for one.",
+    },
     "test_login_form_visual": {
         "title": "Sign-in form still looks the same",
         "why": "Compares the live sign-in card to the baseline screenshot. A fail means Amazon changed the layout.",
@@ -67,6 +71,7 @@ STORIES: dict[str, dict[str, str]] = {
 MARKER_LABELS = {
     "smoke": "Critical path",
     "login": "Sign-in",
+    "login_visual": "Sign-in screenshot",
     "cart": "Cart",
     "tabs": "Navigation",
     "automotive": "Automotive",
@@ -108,7 +113,8 @@ class ReportCollector:
 
 
 def human_title(name: str) -> str:
-    story = STORIES.get(name)
+    base = name.split("[", 1)[0]
+    story = STORIES.get(name) or STORIES.get(base)
     if story:
         return story["title"]
     label = name[5:] if name.startswith("test_") else name

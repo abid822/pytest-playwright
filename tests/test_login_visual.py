@@ -4,7 +4,7 @@ from config.settings import settings
 from utils.visual import compare_screenshot
 
 
-@pytest.mark.login
+@pytest.mark.login_visual
 @pytest.mark.chromium_only
 @pytest.mark.desktop_only
 @pytest.mark.skipif(

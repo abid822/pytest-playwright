@@ -21,7 +21,7 @@ class BasePage:
         # Step 2: Confirm we landed on amazon.com
         self.wait_for_page_load()
         expect(self.page).to_have_url(re.compile(r"amazon\.com", re.I))
-        # Step 3: A bot checkpoint or captcha skips the test. It is not clicked through.
+        # Step 3: Pass the human checkbox when Amazon shows it
         self.dismiss_continue_shopping()
 
     def wait_for_page_load(self) -> None:
@@ -36,8 +36,7 @@ class BasePage:
             pass
 
     def _bot_checkpoint_shown(self) -> bool:
-        # /checkpoint/, a captcha, or the AI-agent interstitial.
-        # The test skips these. It does not click Continue.
+        # /checkpoint/, a captcha form, or the AI-agent interstitial.
         if re.search(r"/checkpoint/|captcha", self.page.url or "", re.I):
             return True
         try:
@@ -51,9 +50,35 @@ class BasePage:
         except Exception:
             return False
 
+    def _pass_human_checkpoint(self) -> None:
+        # Check "I am human" when that box is on the page, then click Continue.
+        form = self.page.locator("form[action*='validateCaptcha']")
+        checkbox = form.locator("input[type='checkbox']").or_(
+            self.page.get_by_role("checkbox", name=re.compile(r"human|not a robot", re.I))
+        )
+        if checkbox.count() and checkbox.first.is_visible():
+            checkbox.first.check()
+        button = self.page.locator(HomeLocators.CONTINUE_SHOPPING_BUTTON).or_(
+            self.page.get_by_role("button", name=re.compile(r"continue", re.I))
+        )
+        if button.count() and button.first.is_visible():
+            button.first.click()
+
     def dismiss_continue_shopping(self) -> None:
-        # Skip the test when Amazon shows a bot checkpoint or captcha.
+        # Click through the human check when those controls are visible.
+        # Skip only if the checkpoint is still there afterward.
         self.wait_for_page_load()
+        if not self._bot_checkpoint_shown():
+            return
+        self._pass_human_checkpoint()
+        self.wait_for_page_load()
+        try:
+            self.page.wait_for_url(
+                re.compile(r"amazon\.com(?!.*/(?:checkpoint|captcha))", re.I),
+                timeout=15000,
+            )
+        except Exception:
+            pass
         if self._bot_checkpoint_shown():
             pytest.skip("Amazon bot checkpoint shown")
 

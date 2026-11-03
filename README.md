@@ -4,7 +4,7 @@
 
 Pytest and Playwright tests for Amazon.com. Each check is a page object calling locators: specs hold the steps, `pages/` holds the clicks and waits, and `locators/` holds the selectors. Visual checks compare a screenshot to a saved image with pixelmatch. Every run also writes a plain-language HTML report.
 
-Amazon is a live site. A captcha, `/checkpoint/`, or the AI-agent interstitial skips the test. The suite does not click through those pages. A regional layout or an experiment can still fail a test when the code has not changed.
+Amazon is a live site. When the continue-shopping check shows an "I am human" checkbox and a Continue button, the suite checks the box and clicks Continue. If that page is still up afterward, or an AI-agent interstitial appears, the test is skipped. A regional layout or an experiment can still fail a test when the code has not changed.
 
 ## Features
 
@@ -40,8 +40,8 @@ Amazon is a live site. A captcha, `/checkpoint/`, or the AI-agent interstitial s
 
 | File | What it covers |
 | --- | --- |
-| `tests/test_login.py` | Opens sign-in from the header, submits `invalidemailgmail.com`, and expects the invalid-email error plus the helper links. Markers: `login`, `smoke`. |
-| `tests/test_login_visual.py` | Opens sign-in and compares the login form to `baselines/amazon_login_form.png`. Markers: `login`, `chromium_only`, `desktop_only`. Skipped on Firefox and WebKit because the baseline is a Chromium screenshot, and skipped with `--device mobile` because the baseline is the desktop form. |
+| `tests/test_login.py` | Opens sign-in from the header, submits `invalidemailgmail.com`, and expects the invalid-email error plus the helper links. Also rejects each of the 20 fake pairs in `data/login_credentials.json`. Markers: `login`, `smoke` (the single bad-email check only). |
+| `tests/test_login_visual.py` | Opens sign-in and compares the login form to `baselines/amazon_login_form.png`. Markers: `login_visual`, `chromium_only`, `desktop_only`. Skipped on Firefox and WebKit because the baseline is a Chromium screenshot, and skipped with `--device mobile` because the baseline is the desktop form. |
 | `tests/test_nav_tabs.py` | Opens home and checks that Best Sellers, Today's Deals, Prime, and Sell are in the top nav. Markers: `smoke`, `tabs`, `desktop_only`. |
 | `tests/test_nav_container.py` | Opens home, checks the top nav strip is visible, and checks that more than five tab links are present. Markers: `tabs`, `desktop_only`. |
 | `tests/test_nav_hamburger.py` | Opens the All menu, requires a stable core set of labels (other JSON labels and extra live items are printed only), drags the scrollbar, and checks that Sign in is visible. Markers: `tabs`, `smoke`, `desktop_only`. |
