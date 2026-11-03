@@ -21,6 +21,7 @@ class LoginPage(HomePage):
         self.continue_btn = page.locator(LoginLocators.CONTINUE_BUTTON).first
         # Password field on the second sign-in step
         self.password = page.locator(LoginLocators.PASSWORD)
+        self.password_submitted = False
         # Sign in after the password is entered
         self.sign_in_submit = page.locator(LoginLocators.SIGN_IN_SUBMIT)
         # Unknown email: Amazon offers account creation instead of a password
@@ -85,18 +86,32 @@ class LoginPage(HomePage):
         # Step 2: Click Continue
         self.continue_btn.click()
 
+    def _visible_password(self):
+        # Any visible password box, not only #ap_password
+        field = self.password.or_(self.page.locator("input[type='password']"))
+        for i in range(field.count()):
+            if field.nth(i).is_visible():
+                return field.nth(i)
+        return None
+
     def submit_credentials(self, username: str, password: str) -> None:
         # Step 1: Enter the username and continue
+        self.password_submitted = False
         self.submit_email(username)
         # Step 2: Pass the human checkbox when Amazon shows it
         self.dismiss_continue_shopping()
         # Step 3: Error, create-account prompt, or a password field
         expect(self.password.or_(self.error).or_(self.new_account).first).to_be_visible()
-        if not self.password.is_visible():
+        password_box = self._visible_password()
+        if password_box is None:
             return
-        self.password.fill(password)
-        # Step 4: Submit the password. A checkpoint here skips the test too.
-        self.sign_in_submit.click()
+        password_box.fill(password)
+        self.password_submitted = True
+        # Step 4: Submit the password. Do not start account creation.
+        if self.sign_in_submit.is_visible():
+            self.sign_in_submit.click()
+        else:
+            password_box.press("Enter")
         self.dismiss_continue_shopping()
 
     def expect_invalid_email_error(self) -> None:
@@ -104,16 +119,20 @@ class LoginPage(HomePage):
         expect(self.error).to_be_visible()
         expect(self.error).to_contain_text(re.compile(r"invalid|incorrect|e-?mail", re.I))
 
-    def expect_login_rejected(self) -> None:
-        # Unknown email stops on the create-account prompt. Do not click it.
-        if self.new_account.first.is_visible():
-            expect(self.new_account.first).to_be_visible()
+    def expect_login_rejected(self, username: str) -> None:
+        # A submitted password must be rejected. Do not click "create an account".
+        if self.password_submitted:
+            expect(self.error).to_be_visible()
+            expect(self.error).to_contain_text(
+                re.compile(r"invalid|incorrect|password|cannot find|problem|account", re.I)
+            )
             return
-        # Otherwise the error banner rejects the username or the password
-        expect(self.error).to_be_visible()
-        expect(self.error).to_contain_text(
-            re.compile(r"invalid|incorrect|e-?mail|password|cannot find|problem|account", re.I)
-        )
+        # Unknown email: the create-account page must show this username.
+        expect(self.new_account.first).to_be_visible()
+        expect(self.page.get_by_text(username, exact=False).first).to_be_visible()
+        expect(
+            self.page.get_by_role("button", name=re.compile(r"Proceed to create an account", re.I))
+        ).to_be_visible()
 
     def expect_sign_in_helpers(self) -> None:
         # Legal text and helper links on the sign-in form

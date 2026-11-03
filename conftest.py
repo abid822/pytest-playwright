@@ -101,16 +101,26 @@ def _outcome_failed(node) -> bool:
 
 
 @pytest.fixture(scope="session")
-def browser_context_managed():
+def browser_managed():
+    # One browser for the run. Each test gets its own context so cookies,
+    # the cart, and a bot flag do not leak into the next test.
     (ROOT / "reports").mkdir(exist_ok=True)
     with sync_playwright() as playwright:
         browser = _launch_browser(playwright)
-        context = browser.new_context(**_context_options(playwright))
-        context.set_default_timeout(settings.default_timeout_ms)
-        expect.set_options(timeout=settings.default_timeout_ms)
-        yield context
-        context.close()
+        yield playwright, browser
         browser.close()
+
+
+@pytest.fixture
+def browser_context_managed(browser_managed):
+    playwright, browser = browser_managed
+    context = browser.new_context(**_context_options(playwright))
+    context.set_default_timeout(settings.default_timeout_ms)
+    expect.set_options(timeout=settings.default_timeout_ms)
+    try:
+        yield context
+    finally:
+        context.close()
 
 
 @pytest.fixture

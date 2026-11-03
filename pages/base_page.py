@@ -1,6 +1,6 @@
 import re
-
 from pathlib import Path
+from urllib.parse import urlparse
 
 import pytest
 from playwright.sync_api import Page, expect
@@ -35,9 +35,14 @@ class BasePage:
         except Exception:
             pass
 
+    def _checkpoint_in_path(self) -> bool:
+        # The path only. A return URL in the query string must not count.
+        path = urlparse(self.page.url or "").path.lower()
+        return "checkpoint" in path or "captcha" in path
+
     def _bot_checkpoint_shown(self) -> bool:
         # /checkpoint/, a captcha form, or the AI-agent interstitial.
-        if re.search(r"/checkpoint/|captcha", self.page.url or "", re.I):
+        if self._checkpoint_in_path():
             return True
         try:
             captcha = self.page.locator(HomeLocators.CONTINUE_SHOPPING_BUTTON)
@@ -51,18 +56,30 @@ class BasePage:
             return False
 
     def _pass_human_checkpoint(self) -> None:
-        # Check "I am human" when that box is on the page, then click Continue.
+        # Check "I am human" on the captcha form, then click that form's button.
+        # Do not click the sign-in Continue control.
         form = self.page.locator("form[action*='validateCaptcha']")
-        checkbox = form.locator("input[type='checkbox']").or_(
-            self.page.get_by_role("checkbox", name=re.compile(r"human|not a robot", re.I))
-        )
+        checkbox = form.locator("input[type='checkbox']")
+        if checkbox.count() == 0:
+            checkbox = self.page.get_by_role(
+                "checkbox", name=re.compile(r"human|not a robot", re.I)
+            )
         if checkbox.count() and checkbox.first.is_visible():
             checkbox.first.check()
-        button = self.page.locator(HomeLocators.CONTINUE_SHOPPING_BUTTON).or_(
-            self.page.get_by_role("button", name=re.compile(r"continue", re.I))
-        )
+        button = form.locator("button, input[type='submit']")
         if button.count() and button.first.is_visible():
             button.first.click()
+            return
+        shopping = self.page.get_by_role(
+            "button", name=re.compile(r"continue shopping", re.I)
+        )
+        if shopping.count() and shopping.first.is_visible():
+            shopping.first.click()
+            return
+        if self._checkpoint_in_path():
+            other = self.page.get_by_role("button", name=re.compile(r"^continue$", re.I))
+            if other.count() and other.first.is_visible():
+                other.first.click()
 
     def dismiss_continue_shopping(self) -> None:
         # Click through the human check when those controls are visible.
@@ -73,8 +90,11 @@ class BasePage:
         self._pass_human_checkpoint()
         self.wait_for_page_load()
         try:
-            self.page.wait_for_url(
-                re.compile(r"amazon\.com(?!.*/(?:checkpoint|captcha))", re.I),
+            self.page.wait_for_function(
+                """() => {
+                  const path = location.pathname.toLowerCase();
+                  return !path.includes('checkpoint') && !path.includes('captcha');
+                }""",
                 timeout=15000,
             )
         except Exception:

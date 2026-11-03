@@ -28,10 +28,10 @@ def test_invalid_login(login_page):
 @pytest.mark.login
 @pytest.mark.parametrize("username,password", _login_cases())
 def test_invalid_credentials(login_page, username, password):
-    """Opens sign-in and expects each fake username and password pair to be rejected. A bot checkpoint skips the case."""
+    """Opens sign-in and expects each fake pair to be rejected. The password is submitted when Amazon shows that field."""
     # Step 1: Open the sign-in form from the header
     login_page.open_sign_in()
     # Step 2: Submit one username and password from data/login_credentials.json
     login_page.submit_credentials(username, password)
-    # Step 3: Amazon should reject the pair
-    login_page.expect_login_rejected()
+    # Step 3: Amazon should reject that username, or the password if it asked for one
+    login_page.expect_login_rejected(username)

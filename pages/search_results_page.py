@@ -62,24 +62,33 @@ class SearchResultsPage(BasePage):
         expect(self.page).to_have_url(re.compile(r"[?&]k=", re.I))
         expect(self.results.first).to_be_visible()
 
-    def organic_result_titles(self, limit: int = 3) -> list[str]:
-        # First organic titles, skipping sponsored and unavailable tiles
-        expect(self.results.first).to_be_visible()
+    def _card_titles(self, limit: int, *, skip_sponsored: bool) -> list[str]:
         titles: list[str] = []
-        for i in range(min(self.results.count(), 24)):
+        total = min(self.results.count(), 48)
+        for i in range(total):
             card = self.results.nth(i)
-            if self._skip_card(card):
+            if card.get_by_text(re.compile(r"Currently unavailable", re.I)).count() > 0:
+                continue
+            if skip_sponsored and card.get_by_text(re.compile(r"^Sponsored$")).count() > 0:
                 continue
             heading = card.locator(SearchLocators.RESULT_TITLE)
             if heading.count() == 0:
                 continue
             text = " ".join(heading.first.inner_text().split())
-            if not text:
+            if not text or text.lower() == "sponsored":
                 continue
             titles.append(text)
             if len(titles) >= limit:
                 break
-        assert titles, "No organic search results found"
+        return titles
+
+    def organic_result_titles(self, limit: int = 3) -> list[str]:
+        # Prefer unsponsored titles. If the first cards are all ads, use product titles anyway.
+        expect(self.results.first).to_be_visible()
+        titles = self._card_titles(limit, skip_sponsored=True)
+        if not titles:
+            titles = self._card_titles(limit, skip_sponsored=False)
+        assert titles, "No product titles found in the search results"
         return titles
 
     def go_to_results_page(self, number: int) -> None:

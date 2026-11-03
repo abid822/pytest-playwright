@@ -36,7 +36,7 @@ STORIES: dict[str, dict[str, str]] = {
     },
     "test_invalid_credentials": {
         "title": "Fake username and password are rejected",
-        "why": "Opens sign-in and submits one fake pair from data/login_credentials.json. Amazon should reject the username, or the password when it asks for one.",
+        "why": "Opens sign-in with one fake pair. A password field must reject that password. An unknown email must show that same email on the create-account page.",
     },
     "test_login_form_visual": {
         "title": "Sign-in form still looks the same",
