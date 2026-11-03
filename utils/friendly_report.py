@@ -58,6 +58,10 @@ STORIES: dict[str, dict[str, str]] = {
         "title": "Today's Deals Electronics lists priced products",
         "why": "Opens Today's Deals, checks the core filters, and opens Electronics to see priced deal cards.",
     },
+    "test_baby_registry_offers_find_by_name": {
+        "title": "Baby Registry can be found by name",
+        "why": "Opens Registry, checks Baby, Wedding, and Gift List, then opens Baby Registry to see the find-by-name search.",
+    },
 }
 
 MARKER_LABELS = {
@@ -71,6 +75,7 @@ MARKER_LABELS = {
     "bestsellers": "Best Sellers",
     "help": "Customer Service",
     "deals": "Today's Deals",
+    "registry": "Registry",
     "ci_skip": "Skipped in CI",
     "chromium_only": "Chromium baseline",
     "desktop_only": "Desktop only",
