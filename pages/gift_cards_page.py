@@ -55,3 +55,16 @@ class GiftCardsPage(BasePage):
             if heading.count() == 0:
                 missing.append(name)
         assert not missing, f"Missing Gift Cards sections: {missing}"
+
+    def _subnav_link(self, selector: str, name: str):
+        # The label is wrapped in whitespace, so do not anchor the match.
+        return self.page.locator(selector).filter(
+            has_text=re.compile(re.escape(name), re.I)
+        ).first
+
+    def expect_redeem_and_balance(self) -> None:
+        # Redeem and balance stay in the Gift Cards subnav.
+        redeem = self._subnav_link(GiftCardsLocators.REDEEM_LINK, "Redeem Gift Cards")
+        balance = self._subnav_link(GiftCardsLocators.BALANCE_LINK, "View Your Balance")
+        expect(redeem).to_be_visible()
+        expect(balance).to_be_visible()
