@@ -59,12 +59,13 @@ class HomePage(BasePage):
     def open_home(self) -> None:
         # Step 1: Load Amazon home
         self.open()
-        # Step 2: Wait until search is ready
-        expect(self.search_input).to_be_visible()
+        # Step 2: Click "Continue shopping" if that page is in the way,
+        # then wait until the search box is ready. The page can come back.
+        self.wait_for_search_box(self.search_input)
 
     def search(self, query: str) -> None:
         # Step 1: Type in the header search box
-        expect(self.search_input).to_be_visible()
+        self.wait_for_search_box(self.search_input)
         expect(self.search_input).to_be_enabled()
         self.search_input.fill(query)
         # Step 2: Submit search

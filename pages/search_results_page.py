@@ -55,7 +55,7 @@ class SearchResultsPage(BasePage):
         self._dismiss_continue_shopping()
         # Step 3: Type the query and submit
         search = self.page.locator(SearchLocators.SEARCH_INPUT).first
-        expect(search).to_be_visible()
+        self.wait_for_search_box(search)
         search.fill(query)
         self.page.locator(SearchLocators.SEARCH_BUTTON).first.click()
         # Step 4: Wait until result cards are on the page

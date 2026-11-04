@@ -94,12 +94,35 @@ class LoginPage(HomePage):
                 return field.nth(i)
         return None
 
+    def _login_step_visible(self) -> bool:
+        # Password field, an error, or the create-account prompt.
+        step = self.password.or_(self.error).or_(self.new_account).first
+        try:
+            return step.count() > 0 and step.is_visible()
+        except Exception:
+            return False
+
+    def _back_on_home(self) -> bool:
+        # Continue shopping leaves sign-in and opens the store home page.
+        url = (self.page.url or "").lower()
+        if "/ap/signin" in url or "openid" in url:
+            return False
+        try:
+            return self.search_input.is_visible()
+        except Exception:
+            return False
+
     def submit_credentials(self, username: str, password: str) -> None:
         # Step 1: Enter the username and continue
         self.password_submitted = False
         self.submit_email(username)
-        # Step 2: Pass the human checkbox when Amazon shows it
+        # Step 2: Pass the human checkbox when Amazon shows it.
+        # Continue shopping sends us back to the home page, so sign in once more.
         self.dismiss_continue_shopping()
+        if not self._login_step_visible() and self._back_on_home():
+            self.open_sign_in()
+            self.submit_email(username)
+            self.dismiss_continue_shopping()
         # Step 3: Error, create-account prompt, or a password field
         expect(self.password.or_(self.error).or_(self.new_account).first).to_be_visible()
         password_box = self._visible_password()
