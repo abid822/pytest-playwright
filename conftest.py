@@ -18,6 +18,7 @@ from pages.bestsellers_page import BestSellersPage
 from pages.customer_service_page import CustomerServicePage
 from pages.deals_page import DealsPage
 from pages.home_page import HomePage
+from pages.new_releases_page import NewReleasesPage
 from pages.registry_page import RegistryPage
 from pages.login_page import LoginPage
 from pages.search_results_page import SearchResultsPage
@@ -175,6 +176,11 @@ def customer_service_page(sb_page) -> CustomerServicePage:
 @pytest.fixture
 def deals_page(sb_page) -> DealsPage:
     return DealsPage(sb_page)
+
+
+@pytest.fixture
+def new_releases_page(sb_page) -> NewReleasesPage:
+    return NewReleasesPage(sb_page)
 
 
 @pytest.fixture

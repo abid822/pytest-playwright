@@ -22,8 +22,8 @@ Amazon is a live site. When the continue-shopping check shows an "I am human" ch
 | Path | Contents |
 | --- | --- |
 | `config/` | `settings.py` — base URL, browser, timeouts, viewport, and the desktop or mobile device profile |
-| `locators/` | Selectors: `HomeLocators`, `SearchLocators`, `LanguageLocators`, `LoginLocators`, `NavLocators`, `AutomotiveLocators`, `BestSellersLocators`, `CustomerServiceLocators`, `DealsLocators`, `RegistryLocators` |
-| `pages/` | Page objects: `BasePage`, `HomePage`, `LoginPage`, `SearchResultsPage`, `AutomotivePage`, `BestSellersPage`, `CustomerServicePage`, `DealsPage`, `RegistryPage` |
+| `locators/` | Selectors: `HomeLocators`, `SearchLocators`, `LanguageLocators`, `LoginLocators`, `NavLocators`, `AutomotiveLocators`, `BestSellersLocators`, `CustomerServiceLocators`, `DealsLocators`, `RegistryLocators`, `NewReleasesLocators` |
+| `pages/` | Page objects: `BasePage`, `HomePage`, `LoginPage`, `SearchResultsPage`, `AutomotivePage`, `BestSellersPage`, `CustomerServicePage`, `DealsPage`, `RegistryPage`, `NewReleasesPage` |
 | `tests/` | Pytest modules. Specs call page objects and leave selectors in `locators/` |
 | `utils/` | `friendly_report.py` (HTML summary) and `visual.py` (pixelmatch) |
 | `data/` | `hamburger_menu.json` — All menu labels. The test asserts a stable core set and warns on the rest |
@@ -53,6 +53,7 @@ Amazon is a live site. When the continue-shopping check shows an "I am human" ch
 | `tests/test_customer_service.py` | Opens Customer Service, checks the help search and the core topics, then opens Shipping and Delivery and checks that articles such as Shipping Rates and Times are listed. Marker: `help`. |
 | `tests/test_deals.py` | Opens Today's Deals, checks Lightning deals, Electronics, Home, and Books, then opens Electronics and checks that deal cards still show a price or a discount. Marker: `deals`. |
 | `tests/test_registry.py` | Opens Registry, checks Baby Registry, Wedding Registry, and Gift List, then opens Baby Registry and checks that find-by-name is ready. Marker: `registry`. |
+| `tests/test_new_releases.py` | Opens New Releases, checks Books, Electronics, Home & Kitchen, and Computers & Accessories, then opens Electronics and checks the #1 product. Markers: `new_releases`, `desktop_only`. The department column is desktop-only. |
 
 ## Setup
 
@@ -105,7 +106,7 @@ HEADLESS=true pytest
 
 `-n auto` (pytest-xdist) starts one worker per CPU. Each worker opens its own browser. `reports/report.html` and `reports/pytest-debug.html` are written once, after the workers finish. Screenshot files include the worker id so they do not overwrite each other, for example `reports/amazon_login_form_actual.gw0.png` and `reports/seat_covers_cart.gw0.png`. A normal run without `-n` keeps the unsuffixed names.
 
-`pytest.ini` also defines `login`, `cart`, `tabs`, `automotive`, `search`, `language`, `bestsellers`, `help`, `deals`, `registry`, `ci_skip`, `chromium_only`, and `desktop_only`. `--strict-markers` is on, so an unknown marker fails collection.
+`pytest.ini` also defines `login`, `cart`, `tabs`, `automotive`, `search`, `language`, `bestsellers`, `help`, `deals`, `registry`, `new_releases`, `ci_skip`, `chromium_only`, and `desktop_only`. `--strict-markers` is on, so an unknown marker fails collection.
 
 ## Devices
 

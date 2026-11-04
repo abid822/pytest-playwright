@@ -40,8 +40,57 @@ class BasePage:
         path = urlparse(self.page.url or "").path.lower()
         return "checkpoint" in path or "captcha" in path
 
+    def _continue_shopping_button(self):
+        return self.page.get_by_role(
+            "button", name=re.compile(r"^Continue shopping$", re.I)
+        )
+
+    def _is_continue_shopping_page(self) -> bool:
+        # A short page: "Click the button below to continue shopping".
+        # No search box. The human checkbox is a different page.
+        button = self._continue_shopping_button()
+        try:
+            if button.count() == 0 or not button.first.is_visible():
+                return False
+            checkbox = self.page.get_by_role(
+                "checkbox", name=re.compile(r"human|not a robot", re.I)
+            )
+            if checkbox.count() and checkbox.first.is_visible():
+                return False
+            return True
+        except Exception:
+            return False
+
+    def click_continue_shopping(self) -> None:
+        # Click the button when that page is showing. It can come back,
+        # so try a few times.
+        button = self._continue_shopping_button()
+        for _ in range(3):
+            try:
+                if button.count() == 0 or not button.first.is_visible():
+                    return
+                button.first.click()
+                self.wait_for_page_load()
+            except Exception:
+                return
+
+    def wait_for_search_box(self, search) -> None:
+        # Leave the continue-shopping page, then wait for the search box.
+        for _ in range(3):
+            self.click_continue_shopping()
+            try:
+                expect(search).to_be_visible(timeout=5000)
+                return
+            except AssertionError:
+                continue
+        self.click_continue_shopping()
+        expect(search).to_be_visible()
+
     def _bot_checkpoint_shown(self) -> bool:
         # /checkpoint/, a captcha form, or the AI-agent interstitial.
+        # The plain Continue shopping page is handled by clicking the button.
+        if self._is_continue_shopping_page():
+            return False
         if self._checkpoint_in_path():
             return True
         try:
@@ -85,6 +134,9 @@ class BasePage:
         # Click through the human check when those controls are visible.
         # Skip only if the checkpoint is still there afterward.
         self.wait_for_page_load()
+        if self._is_continue_shopping_page():
+            self.click_continue_shopping()
+            return
         if not self._bot_checkpoint_shown():
             return
         self._pass_human_checkpoint()
