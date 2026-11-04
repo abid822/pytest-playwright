@@ -19,6 +19,7 @@ class GiftCardsPage(BasePage):
 
     def __init__(self, page: Page) -> None:
         super().__init__(page)
+        self.product_title = page.locator(GiftCardsLocators.PRODUCT_TITLE)
 
     def _shop_heading(self):
         return self.page.get_by_role(
@@ -68,3 +69,42 @@ class GiftCardsPage(BasePage):
         balance = self._subnav_link(GiftCardsLocators.BALANCE_LINK, "View Your Balance")
         expect(redeem).to_be_visible()
         expect(balance).to_be_visible()
+
+    def _birthday_egift(self):
+        # Amazon's own Birthday eGift, not a brand card that mentions a birthday.
+        return self.page.locator(GiftCardsLocators.PRODUCT_LINK).filter(
+            has_text=re.compile(r"Amazon eGift Card", re.I)
+        ).filter(
+            has_text=re.compile(r"\bBirthday\b", re.I)
+        ).first
+
+    def open_birthday_egift(self) -> None:
+        # Step 1: Open a Birthday eGift card from the shop
+        link = self._birthday_egift()
+        expect(link).to_be_visible()
+        href = link.get_attribute("href") or ""
+        link.scroll_into_view_if_needed()
+        link.click()
+        # Step 2: If the click stays on the shop, follow the href
+        try:
+            expect(self.page).to_have_url(re.compile(r"/dp/", re.I), timeout=8000)
+        except AssertionError:
+            if href.startswith("/"):
+                href = "https://www.amazon.com" + href
+            assert href, "Birthday eGift link has no href"
+            self.page.goto(href, wait_until="domcontentloaded")
+        self.wait_for_page_load()
+        self.dismiss_continue_shopping()
+        expect(self.page).to_have_url(re.compile(r"/dp/", re.I))
+        expect(self.page).to_have_title(re.compile(r"Gift Card", re.I))
+
+    def expect_priced_egift(self) -> None:
+        # The detail page names the card and shows a dollar price.
+        expect(self.product_title).to_be_visible()
+        expect(self.product_title).to_contain_text(re.compile(r"Gift Card", re.I))
+        price = self.page.locator(GiftCardsLocators.PRICE).filter(
+            has_text=re.compile(r"\$\s*\d")
+        ).first
+        expect(price).to_be_attached()
+        text = " ".join((price.text_content() or "").split())
+        assert re.search(r"\$\s*\d", text), f"Birthday eGift has no price: {text!r}"
