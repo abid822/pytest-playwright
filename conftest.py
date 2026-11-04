@@ -17,6 +17,7 @@ from pages.automotive_page import AutomotivePage
 from pages.bestsellers_page import BestSellersPage
 from pages.customer_service_page import CustomerServicePage
 from pages.deals_page import DealsPage
+from pages.gift_cards_page import GiftCardsPage
 from pages.home_page import HomePage
 from pages.new_releases_page import NewReleasesPage
 from pages.registry_page import RegistryPage
@@ -176,6 +177,11 @@ def customer_service_page(sb_page) -> CustomerServicePage:
 @pytest.fixture
 def deals_page(sb_page) -> DealsPage:
     return DealsPage(sb_page)
+
+
+@pytest.fixture
+def gift_cards_page(sb_page) -> GiftCardsPage:
+    return GiftCardsPage(sb_page)
 
 
 @pytest.fixture
