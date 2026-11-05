@@ -23,6 +23,7 @@ from pages.new_releases_page import NewReleasesPage
 from pages.registry_page import RegistryPage
 from pages.login_page import LoginPage
 from pages.search_results_page import SearchResultsPage
+from pages.sell_page import SellPage
 from utils.friendly_report import (
     ReportCollector,
     TestRecord,
@@ -157,6 +158,11 @@ def login_page(sb_page) -> LoginPage:
 @pytest.fixture
 def search_results_page(sb_page) -> SearchResultsPage:
     return SearchResultsPage(sb_page)
+
+
+@pytest.fixture
+def sell_page(sb_page) -> SellPage:
+    return SellPage(sb_page)
 
 
 @pytest.fixture

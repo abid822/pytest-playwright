@@ -22,8 +22,8 @@ Amazon is a live site. When the continue-shopping check shows an "I am human" ch
 | Path | Contents |
 | --- | --- |
 | `config/` | `settings.py` — base URL, browser, timeouts, viewport, and the desktop or mobile device profile |
-| `locators/` | Selectors: `HomeLocators`, `SearchLocators`, `LanguageLocators`, `LoginLocators`, `NavLocators`, `AutomotiveLocators`, `BestSellersLocators`, `CustomerServiceLocators`, `DealsLocators`, `RegistryLocators`, `NewReleasesLocators`, `GiftCardsLocators` |
-| `pages/` | Page objects: `BasePage`, `HomePage`, `LoginPage`, `SearchResultsPage`, `AutomotivePage`, `BestSellersPage`, `CustomerServicePage`, `DealsPage`, `RegistryPage`, `NewReleasesPage`, `GiftCardsPage` |
+| `locators/` | Selectors: `HomeLocators`, `SearchLocators`, `LanguageLocators`, `LoginLocators`, `NavLocators`, `AutomotiveLocators`, `BestSellersLocators`, `CustomerServiceLocators`, `DealsLocators`, `RegistryLocators`, `NewReleasesLocators`, `GiftCardsLocators`, `SellLocators` |
+| `pages/` | Page objects: `BasePage`, `HomePage`, `LoginPage`, `SearchResultsPage`, `AutomotivePage`, `BestSellersPage`, `CustomerServicePage`, `DealsPage`, `RegistryPage`, `NewReleasesPage`, `GiftCardsPage`, `SellPage` |
 | `tests/` | Pytest modules. Specs call page objects and leave selectors in `locators/` |
 | `utils/` | `friendly_report.py` (HTML summary) and `visual.py` (pixelmatch) |
 | `data/` | `hamburger_menu.json` — All menu labels. The test asserts a stable core set and warns on the rest |
@@ -55,6 +55,7 @@ Amazon is a live site. When the continue-shopping check shows an "I am human" ch
 | `tests/test_registry.py` | Opens Registry, checks Baby Registry, Wedding Registry, and Gift List, then opens Baby Registry and checks that find-by-name is ready. Marker: `registry`. |
 | `tests/test_new_releases.py` | Opens New Releases, checks Books, Electronics, Home & Kitchen, and Computers & Accessories, then opens Electronics and checks the #1 product. Markers: `new_releases`, `desktop_only`. The department column is desktop-only. |
 | `tests/test_gift_cards.py` | Opens Gift Cards, checks occasion, brand, category, and delivery type, then opens a Birthday eGift card and checks that it shows a price. Marker: `gift_cards`. |
+| `tests/test_sell.py` | Opens Sell on Amazon, checks the account steps, then opens selling plans and checks that Individual and Professional each show a price. Marker: `sell`. |
 
 ## Setup
 
@@ -107,7 +108,7 @@ HEADLESS=true pytest
 
 `-n auto` (pytest-xdist) starts one worker per CPU. Each worker opens its own browser. `reports/report.html` and `reports/pytest-debug.html` are written once, after the workers finish. Screenshot files include the worker id so they do not overwrite each other, for example `reports/amazon_login_form_actual.gw0.png` and `reports/seat_covers_cart.gw0.png`. A normal run without `-n` keeps the unsuffixed names.
 
-`pytest.ini` also defines `login`, `cart`, `tabs`, `automotive`, `search`, `language`, `bestsellers`, `help`, `deals`, `registry`, `new_releases`, `gift_cards`, `ci_skip`, `chromium_only`, and `desktop_only`. `--strict-markers` is on, so an unknown marker fails collection.
+`pytest.ini` also defines `login`, `cart`, `tabs`, `automotive`, `search`, `language`, `bestsellers`, `help`, `deals`, `registry`, `new_releases`, `gift_cards`, `sell`, `ci_skip`, `chromium_only`, and `desktop_only`. `--strict-markers` is on, so an unknown marker fails collection.
 
 ## Devices
 
@@ -127,7 +128,7 @@ HEADLESS=true pytest --device mobile -n auto
 
 [`.github/workflows/run-tests.yml`](.github/workflows/run-tests.yml) runs on every push to `main`, on pull requests, every day at 13:00 UTC (`0 13 * * *`), and when the workflow is started by hand. The workflow uses `ubuntu-latest` and Python 3.12, caches pip, and installs `requirements.txt`.
 
-The test job is a matrix over `chromium`, `firefox`, and `webkit` with `fail-fast: false`, so one browser does not cancel the others. Each job installs only that browser, with its system libraries (`playwright install --with-deps`). It sets `HEADLESS=true`, `SLOW_MO=0`, `BROWSER` to the matrix value, and an empty `BROWSER_CHANNEL` so Chromium is the Playwright build rather than installed Google Chrome. The other variables in `.env.example` (`BASE_URL`, `DEFAULT_TIMEOUT_MS`, `VIEWPORT_WIDTH`, `VIEWPORT_HEIGHT`) are set to those sample values. It runs `pytest -n auto -m "not ci_skip" --reruns 1`. The extra retry covers a dropped connection. It does not change what a test asserts.
+The test job is a matrix over `chromium`, `firefox`, and `webkit` with `fail-fast: false`, so one browser does not cancel the others. Each job installs only that browser, with its system libraries (`playwright install --with-deps`). It sets `HEADLESS=true`, `SLOW_MO=0`, `BROWSER` to the matrix value, and an empty `BROWSER_CHANNEL` so Chromium is the Playwright build rather than installed Google Chrome. The other variables in `.env.example` (`BASE_URL`, `DEFAULT_TIMEOUT_MS`, `VIEWPORT_WIDTH`, `VIEWPORT_HEIGHT`) are set to those sample values. Pull requests run `pytest -n auto --reruns 1 tests/test_sell.py tests/test_login.py::test_invalid_login`. Pushes to `main`, the daily schedule, and manual runs keep `pytest -n auto -m "not ci_skip" --reruns 1`. The extra retry covers a dropped connection. It does not change what a test asserts.
 
 `ci_skip` is for a test that cannot pass on a GitHub-hosted runner. Right now that is only `tests/test_automotive.py::test_add_2023_tesla_model_3_to_garage`: the Your Garage year/make/model control does not open in headless Chromium. It is deselected on every browser. CI keeps the default `--device desktop`.
 

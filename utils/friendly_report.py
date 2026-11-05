@@ -74,6 +74,10 @@ STORIES: dict[str, dict[str, str]] = {
         "title": "Birthday eGift card shows a price",
         "why": "Opens Gift Cards, checks the shop sections, and opens a Birthday eGift card that shows a price.",
     },
+    "test_sell_page_shows_priced_selling_plans": {
+        "title": "Sell page lists priced selling plans",
+        "why": "Opens Sell on Amazon, checks the account steps, and opens selling plans to see Individual and Professional prices.",
+    },
 }
 
 MARKER_LABELS = {
@@ -91,6 +95,7 @@ MARKER_LABELS = {
     "registry": "Registry",
     "new_releases": "New Releases",
     "gift_cards": "Gift Cards",
+    "sell": "Sell",
     "ci_skip": "Skipped in CI",
     "chromium_only": "Chromium baseline",
     "desktop_only": "Desktop only",
