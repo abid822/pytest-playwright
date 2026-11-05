@@ -22,8 +22,8 @@ Amazon is a live site. When the continue-shopping check shows an "I am human" ch
 | Path | Contents |
 | --- | --- |
 | `config/` | `settings.py` — base URL, browser, timeouts, viewport, and the desktop or mobile device profile |
-| `locators/` | Selectors: `HomeLocators`, `SearchLocators`, `LanguageLocators`, `LoginLocators`, `NavLocators`, `AutomotiveLocators`, `BestSellersLocators`, `CustomerServiceLocators`, `DealsLocators`, `RegistryLocators`, `NewReleasesLocators`, `GiftCardsLocators`, `SellLocators` |
-| `pages/` | Page objects: `BasePage`, `HomePage`, `LoginPage`, `SearchResultsPage`, `AutomotivePage`, `BestSellersPage`, `CustomerServicePage`, `DealsPage`, `RegistryPage`, `NewReleasesPage`, `GiftCardsPage`, `SellPage` |
+| `locators/` | Selectors: `HomeLocators`, `SearchLocators`, `LanguageLocators`, `LoginLocators`, `NavLocators`, `AutomotiveLocators`, `BestSellersLocators`, `CustomerServiceLocators`, `DealsLocators`, `RegistryLocators`, `NewReleasesLocators`, `GiftCardsLocators`, `SellLocators`, `FindAGiftLocators` |
+| `pages/` | Page objects: `BasePage`, `HomePage`, `LoginPage`, `SearchResultsPage`, `AutomotivePage`, `BestSellersPage`, `CustomerServicePage`, `DealsPage`, `RegistryPage`, `NewReleasesPage`, `GiftCardsPage`, `SellPage`, `FindAGiftPage` |
 | `tests/` | Pytest modules. Specs call page objects and leave selectors in `locators/` |
 | `utils/` | `friendly_report.py` (HTML summary) and `visual.py` (pixelmatch) |
 | `data/` | `hamburger_menu.json` — All menu labels. The test asserts a stable core set and warns on the rest |
@@ -56,6 +56,7 @@ Amazon is a live site. When the continue-shopping check shows an "I am human" ch
 | `tests/test_new_releases.py` | Opens New Releases, checks Books, Electronics, Home & Kitchen, and Computers & Accessories, then opens Electronics and checks the #1 product. Markers: `new_releases`, `desktop_only`. The department column is desktop-only. |
 | `tests/test_gift_cards.py` | Opens Gift Cards, checks occasion, brand, category, and delivery type, then opens a Birthday eGift card and checks that it shows a price. Marker: `gift_cards`. |
 | `tests/test_sell.py` | Opens Sell on Amazon, checks the account steps, then opens selling plans and checks that Individual and Professional each show a price. Marker: `sell`. |
+| `tests/test_find_a_gift.py` | Opens Find a Gift, checks occasion, interest, and recipient, then opens Birthdays and checks that a gift shows a price. Marker: `find_a_gift`. |
 
 ## Setup
 
@@ -108,7 +109,7 @@ HEADLESS=true pytest
 
 `-n auto` (pytest-xdist) starts one worker per CPU. Each worker opens its own browser. `reports/report.html` and `reports/pytest-debug.html` are written once, after the workers finish. Screenshot files include the worker id so they do not overwrite each other, for example `reports/amazon_login_form_actual.gw0.png` and `reports/seat_covers_cart.gw0.png`. A normal run without `-n` keeps the unsuffixed names.
 
-`pytest.ini` also defines `login`, `cart`, `tabs`, `automotive`, `search`, `language`, `bestsellers`, `help`, `deals`, `registry`, `new_releases`, `gift_cards`, `sell`, `ci_skip`, `chromium_only`, and `desktop_only`. `--strict-markers` is on, so an unknown marker fails collection.
+`pytest.ini` also defines `login`, `cart`, `tabs`, `automotive`, `search`, `language`, `bestsellers`, `help`, `deals`, `registry`, `new_releases`, `gift_cards`, `sell`, `find_a_gift`, `ci_skip`, `chromium_only`, and `desktop_only`. `--strict-markers` is on, so an unknown marker fails collection.
 
 ## Devices
 
