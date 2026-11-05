@@ -2,7 +2,7 @@
 
 # pytest-playwright
 
-Pytest and Playwright tests for Amazon.com. Each check is a page object calling locators: specs hold the steps, `pages/` holds the clicks and waits, and `locators/` holds the selectors. Visual checks compare a screenshot to a saved image with pixelmatch. Every run also writes a plain-language HTML report.
+Pytest and Playwright tests for Amazon.com. Each check is a page object that calls locators: specs hold the steps, `pages/` holds the clicks and waits, and `locators/` holds the selectors. Visual checks compare a screenshot to a saved image with pixelmatch. Every run also writes a plain-language HTML report.
 
 Amazon is a live site. When the continue-shopping check shows an "I am human" checkbox and a Continue button, the suite checks the box and clicks Continue. If that page is still up afterward, or an AI-agent interstitial appears, the test is skipped. A regional layout or an experiment can still fail a test when the code has not changed.
 
