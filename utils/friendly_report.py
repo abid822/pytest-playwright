@@ -86,6 +86,10 @@ STORIES: dict[str, dict[str, str]] = {
         "title": "Amazon Home Kitchen shows a price",
         "why": "Opens Amazon Home, checks the store categories, and opens Kitchen & Dining to see a price.",
     },
+    "test_books_literature_shows_a_price": {
+        "title": "Books Literature & Fiction shows a price",
+        "why": "Opens Books, checks the store sections, and opens Literature & Fiction to see a book with a price.",
+    },
 }
 
 MARKER_LABELS = {
@@ -106,6 +110,7 @@ MARKER_LABELS = {
     "sell": "Sell",
     "find_a_gift": "Find a Gift",
     "amazon_home": "Amazon Home",
+    "books": "Books",
     "ci_skip": "Skipped in CI",
     "chromium_only": "Chromium baseline",
     "desktop_only": "Desktop only",
