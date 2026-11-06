@@ -13,6 +13,7 @@ from config.settings import (
     normalize_device,
     settings,
 )
+from pages.amazon_home_page import AmazonHomePage
 from pages.automotive_page import AutomotivePage
 from pages.bestsellers_page import BestSellersPage
 from pages.customer_service_page import CustomerServicePage
@@ -164,6 +165,11 @@ def search_results_page(sb_page) -> SearchResultsPage:
 @pytest.fixture
 def sell_page(sb_page) -> SellPage:
     return SellPage(sb_page)
+
+
+@pytest.fixture
+def amazon_home_page(sb_page) -> AmazonHomePage:
+    return AmazonHomePage(sb_page)
 
 
 @pytest.fixture
