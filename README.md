@@ -113,7 +113,7 @@ HEADLESS=true pytest
 
 `-n auto` (pytest-xdist) starts one worker per CPU. Each worker opens its own browser. `reports/report.html` and `reports/pytest-debug.html` are written once, after the workers finish. Screenshot files include the worker id so they do not overwrite each other, for example `reports/amazon_login_form_actual.gw0.png` and `reports/seat_covers_cart.gw0.png`. A normal run without `-n` keeps the unsuffixed names.
 
-`pytest.ini` also defines `login`, `cart`, `tabs`, `automotive`, `search`, `language`, `bestsellers`, `help`, `deals`, `registry`, `new_releases`, `gift_cards`, `sell`, `find_a_gift`, `amazon_home`, `books`, `beauty`, `ci_skip`, `chromium_only`, and `desktop_only`. `--strict-markers` is on, so an unknown marker fails collection.
+`pytest.ini` also defines `login`, `cart`, `tabs`, `automotive`, `search`, `language`, `bestsellers`, `help`, `deals`, `registry`, `new_releases`, `gift_cards`, `sell`, `find_a_gift`, `amazon_home`, `books`, `beauty`, `electronics`, `ci_skip`, `chromium_only`, and `desktop_only`. `--strict-markers` is on, so an unknown marker fails collection.
 
 ## Devices
 
