@@ -20,6 +20,7 @@ from pages.bestsellers_page import BestSellersPage
 from pages.books_page import BooksPage
 from pages.customer_service_page import CustomerServicePage
 from pages.deals_page import DealsPage
+from pages.electronics_page import ElectronicsPage
 from pages.find_a_gift_page import FindAGiftPage
 from pages.gift_cards_page import GiftCardsPage
 from pages.home_page import HomePage
@@ -202,6 +203,11 @@ def customer_service_page(sb_page) -> CustomerServicePage:
 @pytest.fixture
 def deals_page(sb_page) -> DealsPage:
     return DealsPage(sb_page)
+
+
+@pytest.fixture
+def electronics_page(sb_page) -> ElectronicsPage:
+    return ElectronicsPage(sb_page)
 
 
 @pytest.fixture
