@@ -68,3 +68,39 @@ class ElectronicsPage(BasePage):
             if link.count() == 0:
                 missing.append(name)
         assert not missing, f"Missing Electronics categories: {missing}"
+
+    def open_category(self, name: str) -> None:
+        # Step 1: Open that category from the store strip
+        link = self._category_link(name)
+        expect(link).to_be_visible()
+        href = link.get_attribute("href") or ""
+        match = re.search(r"node=(\d+)", href)
+        assert match, f"{name} category link has no node"
+        node = match.group(1)
+        link.click()
+        # Step 2: If the click does not leave the landing page, follow the href
+        try:
+            expect(self.page).to_have_url(
+                re.compile(rf"node={node}(?:&|$)"), timeout=8000
+            )
+        except AssertionError:
+            if href.startswith("/"):
+                href = "https://www.amazon.com" + href
+            assert href, f"{name} category link has no href"
+            self.page.goto(href, wait_until="domcontentloaded")
+        self.wait_for_page_load()
+        self.dismiss_continue_shopping()
+        expect(self.page).to_have_url(re.compile(rf"node={node}(?:&|$)"))
+        expect(self.page).to_have_title(re.compile(re.escape(name), re.I))
+        expect(
+            self.page.get_by_role(
+                "heading", name=re.compile(rf"^{re.escape(name)}$", re.I)
+            ).first
+        ).to_be_visible()
+
+    def expect_priced_product(self) -> None:
+        # A product card on the category page shows a dollar price.
+        price = self.page.locator(ElectronicsLocators.PRODUCT_PRICE).first
+        expect(price).to_be_attached()
+        text = " ".join((price.text_content() or "").split())
+        assert re.search(r"\$\s*\d", text), f"Electronics product has no price: {text!r}"
