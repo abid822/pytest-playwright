@@ -98,6 +98,10 @@ STORIES: dict[str, dict[str, str]] = {
         "title": "Electronics Headphones shows a price",
         "why": "Opens Electronics, checks the store categories, and opens Headphones to see a price.",
     },
+    "test_baby_strollers_shows_a_price": {
+        "title": "Baby Strollers shows a price",
+        "why": "Opens Baby, checks the store categories, and opens Strollers to see a price.",
+    },
 }
 
 MARKER_LABELS = {
@@ -121,6 +125,7 @@ MARKER_LABELS = {
     "books": "Books",
     "beauty": "Beauty",
     "electronics": "Electronics",
+    "baby": "Baby",
     "ci_skip": "Skipped in CI",
     "chromium_only": "Chromium baseline",
     "desktop_only": "Desktop only",
