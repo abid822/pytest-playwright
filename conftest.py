@@ -18,6 +18,7 @@ from pages.automotive_page import AutomotivePage
 from pages.beauty_page import BeautyPage
 from pages.bestsellers_page import BestSellersPage
 from pages.books_page import BooksPage
+from pages.cart_page import CartPage
 from pages.customer_service_page import CustomerServicePage
 from pages.deals_page import DealsPage
 from pages.electronics_page import ElectronicsPage
@@ -193,6 +194,11 @@ def beauty_page(sb_page) -> BeautyPage:
 @pytest.fixture
 def books_page(sb_page) -> BooksPage:
     return BooksPage(sb_page)
+
+
+@pytest.fixture
+def cart_page(sb_page) -> CartPage:
+    return CartPage(sb_page)
 
 
 @pytest.fixture

@@ -18,6 +18,10 @@ STORIES: dict[str, dict[str, str]] = {
         "title": "Cheap USB-C cable in the cart",
         "why": "Searches for a USB-C charging cable and confirms the header cart is no longer empty.",
     },
+    "test_empty_cart_offers_sign_in_and_deals": {
+        "title": "Empty cart offers sign-in and deals",
+        "why": "Opens the shopping cart with nothing in it and checks the empty message, a zero header count, and links to sign in and Today's Deals.",
+    },
     "test_nav_container": {
         "title": "Top navigation is on the page",
         "why": "Opens Amazon home and checks that the header tab strip is visible with more than a few links.",
