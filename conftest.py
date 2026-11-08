@@ -15,6 +15,7 @@ from config.settings import (
 )
 from pages.amazon_home_page import AmazonHomePage
 from pages.automotive_page import AutomotivePage
+from pages.baby_page import BabyPage
 from pages.beauty_page import BeautyPage
 from pages.bestsellers_page import BestSellersPage
 from pages.books_page import BooksPage
@@ -178,6 +179,11 @@ def amazon_home_page(sb_page) -> AmazonHomePage:
 @pytest.fixture
 def automotive_page(sb_page) -> AutomotivePage:
     return AutomotivePage(sb_page)
+
+
+@pytest.fixture
+def baby_page(sb_page) -> BabyPage:
+    return BabyPage(sb_page)
 
 
 @pytest.fixture
