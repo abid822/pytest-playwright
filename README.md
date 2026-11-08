@@ -22,8 +22,8 @@ Amazon is a live site. When the continue-shopping check shows an "I am human" ch
 | Path | Contents |
 | --- | --- |
 | `config/` | `settings.py` — base URL, browser, timeouts, viewport, and the desktop or mobile device profile |
-| `locators/` | Selectors: `HomeLocators`, `SearchLocators`, `LanguageLocators`, `LoginLocators`, `NavLocators`, `AutomotiveLocators`, `BestSellersLocators`, `CustomerServiceLocators`, `DealsLocators`, `RegistryLocators`, `NewReleasesLocators`, `GiftCardsLocators`, `SellLocators`, `FindAGiftLocators`, `AmazonHomeLocators`, `BooksLocators`, `BeautyLocators`, `ElectronicsLocators` |
-| `pages/` | Page objects: `BasePage`, `HomePage`, `LoginPage`, `SearchResultsPage`, `AutomotivePage`, `BestSellersPage`, `CustomerServicePage`, `DealsPage`, `RegistryPage`, `NewReleasesPage`, `GiftCardsPage`, `SellPage`, `FindAGiftPage`, `AmazonHomePage`, `BooksPage`, `BeautyPage`, `ElectronicsPage` |
+| `locators/` | Selectors: `HomeLocators`, `SearchLocators`, `LanguageLocators`, `LoginLocators`, `NavLocators`, `AutomotiveLocators`, `BestSellersLocators`, `CustomerServiceLocators`, `DealsLocators`, `RegistryLocators`, `NewReleasesLocators`, `GiftCardsLocators`, `SellLocators`, `FindAGiftLocators`, `AmazonHomeLocators`, `BooksLocators`, `BeautyLocators`, `ElectronicsLocators`, `CartLocators` |
+| `pages/` | Page objects: `BasePage`, `HomePage`, `LoginPage`, `SearchResultsPage`, `AutomotivePage`, `BestSellersPage`, `CustomerServicePage`, `DealsPage`, `RegistryPage`, `NewReleasesPage`, `GiftCardsPage`, `SellPage`, `FindAGiftPage`, `AmazonHomePage`, `BooksPage`, `BeautyPage`, `ElectronicsPage`, `CartPage` |
 | `tests/` | Pytest modules. Specs call page objects and leave selectors in `locators/` |
 | `utils/` | `friendly_report.py` (HTML summary) and `visual.py` (pixelmatch) |
 | `data/` | `hamburger_menu.json` — All menu labels. The test asserts a stable core set and warns on the rest |
@@ -46,6 +46,7 @@ Amazon is a live site. When the continue-shopping check shows an "I am human" ch
 | `tests/test_nav_container.py` | Opens home, checks the top nav strip is visible, and checks that more than five tab links are present. Markers: `tabs`, `desktop_only`. |
 | `tests/test_nav_hamburger.py` | Opens the All menu, requires a stable core set of labels (other JSON labels and extra live items are only printed), drags the scrollbar, and checks that Sign in is visible. Markers: `tabs`, `smoke`, `desktop_only`. |
 | `tests/test_cart.py` | Searches for `usb c charging cable`, adds the first result, and checks the header cart count is no longer 0. Markers: `cart`, `smoke`. |
+| `tests/test_cart_empty.py` | Opens the cart with nothing in it and checks the empty message, a header count of 0, and links to sign in and Today's Deals. Marker: `cart`. |
 | `tests/test_search_pagination.py` | Searches for `hardcover notebook`, records organic titles on page 1, opens page 2, and checks the titles changed. Markers: `search`, `desktop_only`. Mobile web has no numbered page strip. |
 | `tests/test_automotive.py` | Opens Automotive, adds a 2023 Tesla Model 3 to Your Garage, logs whether "More vehicle information needed" is showing, searches seat covers, sorts Price: Low to High, adds the first result, opens the cart, and saves screenshots of both. Markers: `automotive`, `smoke`, `ci_skip`. |
 | `tests/test_language.py` | Opens language settings from the header EN control. English stays selected, Spanish is offered, and the form is left unsaved. Marker: `language`. |
