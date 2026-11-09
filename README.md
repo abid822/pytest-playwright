@@ -22,8 +22,8 @@ Amazon is a live site. When the continue-shopping check shows an "I am human" ch
 | Path | Contents |
 | --- | --- |
 | `config/` | `settings.py` — base URL, browser, timeouts, viewport, and the desktop or mobile device profile |
-| `locators/` | Selectors: `HomeLocators`, `SearchLocators`, `LanguageLocators`, `LoginLocators`, `NavLocators`, `AutomotiveLocators`, `BestSellersLocators`, `CustomerServiceLocators`, `DealsLocators`, `RegistryLocators`, `NewReleasesLocators`, `GiftCardsLocators`, `SellLocators`, `FindAGiftLocators`, `AmazonHomeLocators`, `BooksLocators`, `BeautyLocators`, `ElectronicsLocators`, `BabyLocators`, `FooterLocators` |
-| `pages/` | Page objects: `BasePage`, `HomePage`, `LoginPage`, `SearchResultsPage`, `AutomotivePage`, `BestSellersPage`, `CustomerServicePage`, `DealsPage`, `RegistryPage`, `NewReleasesPage`, `GiftCardsPage`, `SellPage`, `FindAGiftPage`, `AmazonHomePage`, `BooksPage`, `BeautyPage`, `ElectronicsPage`, `BabyPage`, `FooterPage` |
+| `locators/` | Selectors: `HomeLocators`, `SearchLocators`, `LanguageLocators`, `LoginLocators`, `NavLocators`, `AutomotiveLocators`, `BestSellersLocators`, `CustomerServiceLocators`, `DealsLocators`, `RegistryLocators`, `NewReleasesLocators`, `GiftCardsLocators`, `SellLocators`, `FindAGiftLocators`, `AmazonHomeLocators`, `BooksLocators`, `BeautyLocators`, `ElectronicsLocators`, `BabyLocators`, `FooterLocators`, `SportsLocators` |
+| `pages/` | Page objects: `BasePage`, `HomePage`, `LoginPage`, `SearchResultsPage`, `AutomotivePage`, `BestSellersPage`, `CustomerServicePage`, `DealsPage`, `RegistryPage`, `NewReleasesPage`, `GiftCardsPage`, `SellPage`, `FindAGiftPage`, `AmazonHomePage`, `BooksPage`, `BeautyPage`, `ElectronicsPage`, `BabyPage`, `FooterPage`, `SportsPage` |
 | `tests/` | Pytest modules. Specs call page objects and leave selectors in `locators/` |
 | `utils/` | `friendly_report.py` (HTML summary) and `visual.py` (pixelmatch) |
 | `data/` | `hamburger_menu.json` — All menu labels. The test asserts a stable core set and warns on the rest |
@@ -63,6 +63,7 @@ Amazon is a live site. When the continue-shopping check shows an "I am human" ch
 | `tests/test_electronics.py` | Opens Electronics, checks Cell Phones, Computers, TV & Video, and Headphones, then opens Headphones and checks that a product shows a price. Markers: `electronics`, `desktop_only`. The store category strip is desktop-only. |
 | `tests/test_baby.py` | Opens the Baby store, checks Strollers, Car Seats, Nursery, and Feeding, then opens Strollers and checks that a product shows a price. Markers: `baby`, `desktop_only`. The store category strip is desktop-only. |
 | `tests/test_footer.py` | Opens the home footer, checks Get to Know Us, Make Money with Us, Amazon Payment Products, and Let Us Help You, then uses Back to top. Markers: `footer`, `desktop_only`. The four-column footer is desktop-only. |
+| `tests/test_sports.py` | Opens Sports & Outdoors, checks Outdoor Recreation, Cycling, Exercise & Fitness, and Golf, then opens Cycling and checks that a product shows a price. Markers: `sports`, `desktop_only`. The store category strip is desktop-only. |
 
 ## Setup
 
