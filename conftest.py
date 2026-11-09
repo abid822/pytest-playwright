@@ -23,6 +23,7 @@ from pages.customer_service_page import CustomerServicePage
 from pages.deals_page import DealsPage
 from pages.electronics_page import ElectronicsPage
 from pages.find_a_gift_page import FindAGiftPage
+from pages.footer_page import FooterPage
 from pages.gift_cards_page import GiftCardsPage
 from pages.home_page import HomePage
 from pages.new_releases_page import NewReleasesPage
@@ -214,6 +215,11 @@ def deals_page(sb_page) -> DealsPage:
 @pytest.fixture
 def electronics_page(sb_page) -> ElectronicsPage:
     return ElectronicsPage(sb_page)
+
+
+@pytest.fixture
+def footer_page(sb_page) -> FooterPage:
+    return FooterPage(sb_page)
 
 
 @pytest.fixture

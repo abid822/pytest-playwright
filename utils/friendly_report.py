@@ -46,6 +46,10 @@ STORIES: dict[str, dict[str, str]] = {
         "title": "Search page 2 is a new set of products",
         "why": "Searches hardcover notebooks, notes page 1 titles, opens page 2, and checks the products changed.",
     },
+    "test_footer_back_to_top_returns_to_the_header": {
+        "title": "Footer Back to top returns to the header",
+        "why": "Opens Amazon home, checks the footer columns and help links, then uses Back to top.",
+    },
     "test_language_settings_keep_english_and_offer_spanish": {
         "title": "Language settings offer English and Spanish",
         "why": "Opens the header language control and checks that English is selected, Spanish is available, and the choice is not saved.",
@@ -112,6 +116,7 @@ MARKER_LABELS = {
     "tabs": "Navigation",
     "automotive": "Automotive",
     "search": "Search",
+    "footer": "Footer",
     "language": "Language",
     "bestsellers": "Best Sellers",
     "help": "Customer Service",
