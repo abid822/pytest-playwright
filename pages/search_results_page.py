@@ -7,7 +7,7 @@ from pages.base_page import BasePage
 
 
 class SearchResultsPage(BasePage):
-    """Search results: sort, paginate, then add a product to the cart."""
+    """Search results: sort, paginate, empty search, then add a product to the cart."""
 
     def __init__(self, page: Page) -> None:
         super().__init__(page)
@@ -47,6 +47,38 @@ class SearchResultsPage(BasePage):
     def _dismiss_continue_shopping(self) -> None:
         # Fresh sessions sometimes land on a continue-shopping check
         self.dismiss_continue_shopping()
+
+    def search_with_no_results(self, query: str) -> None:
+        # Step 1: Open Amazon home
+        self.open()
+        # Step 2: Clear the continue-shopping check when it is shown
+        self._dismiss_continue_shopping()
+        # Step 3: Type a query that should not match a product and submit
+        search = self.page.locator(SearchLocators.SEARCH_INPUT).first
+        self.wait_for_search_box(search)
+        search.fill(query)
+        self.page.locator(SearchLocators.SEARCH_BUTTON).first.click()
+        # Step 4: The results URL is up. Product cards are not required.
+        self.wait_for_page_load()
+        self.dismiss_continue_shopping()
+        expect(self.page).to_have_url(
+            re.compile(rf"[?&]k={re.escape(query)}(?:&|$)", re.I)
+        )
+        expect(search).to_have_value(query)
+
+    def expect_no_results(self) -> None:
+        # The empty-state heading and the spelling hint. No product cards.
+        heading = self.page.locator(SearchLocators.NO_RESULTS_HEADING).filter(
+            has_text=re.compile(r"No results for your search query", re.I)
+        )
+        expect(heading.first).to_be_visible()
+        hint = self.page.locator(SearchLocators.NO_RESULTS_HINT).filter(
+            has_text=re.compile(
+                r"Try checking your spelling or use more general terms", re.I
+            )
+        )
+        expect(hint.first).to_be_visible()
+        expect(self.results).to_have_count(0)
 
     def search_from_home(self, query: str) -> None:
         # Step 1: Open Amazon home

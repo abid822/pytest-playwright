@@ -19,6 +19,10 @@ class SearchLocators:
     # aria-label is "Go to page 2", "Go to page 3", ...
     PAGINATION_PAGE_LINK = "a.s-pagination-item[aria-label='Go to page {}']"
     PAGINATION_SELECTED = "span.s-pagination-selected"  # current page number
+    # Empty search. The h2 has no class; the message sits on this span.
+    NO_RESULTS_HEADING = "h2 span.a-size-medium.a-color-base.a-text-normal"
+    # "Try checking your spelling or use more general terms"
+    NO_RESULTS_HINT = "div.a-row.a-size-base.a-color-base"
 
 
 class LanguageLocators:
