@@ -32,6 +32,7 @@ from pages.login_page import LoginPage
 from pages.search_results_page import SearchResultsPage
 from pages.sell_page import SellPage
 from pages.sports_page import SportsPage
+from pages.video_games_page import VideoGamesPage
 from utils.friendly_report import (
     ReportCollector,
     TestRecord,
@@ -176,6 +177,11 @@ def sell_page(sb_page) -> SellPage:
 @pytest.fixture
 def sports_page(sb_page) -> SportsPage:
     return SportsPage(sb_page)
+
+
+@pytest.fixture
+def video_games_page(sb_page) -> VideoGamesPage:
+    return VideoGamesPage(sb_page)
 
 
 @pytest.fixture
