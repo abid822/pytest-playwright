@@ -50,6 +50,10 @@ STORIES: dict[str, dict[str, str]] = {
         "title": "A search with no matches shows an empty state",
         "why": "Searches for a query that matches nothing and checks the empty-state message, with no product cards.",
     },
+    "test_search_four_stars_and_up_keeps_highly_rated_results": {
+        "title": "4 Stars & Up keeps highly rated results",
+        "why": "Searches for a water bottle, applies 4 Stars & Up, and checks the filter stays selected with ratings of 4 or higher.",
+    },
     "test_footer_back_to_top_returns_to_the_header": {
         "title": "Footer Back to top returns to the header",
         "why": "Opens Amazon home, checks the footer columns and help links, then uses Back to top.",

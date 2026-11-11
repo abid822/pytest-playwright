@@ -1,4 +1,5 @@
 import re
+from urllib.parse import unquote
 
 from playwright.sync_api import Page, expect
 
@@ -7,7 +8,7 @@ from pages.base_page import BasePage
 
 
 class SearchResultsPage(BasePage):
-    """Search results: sort, paginate, empty search, then add a product to the cart."""
+    """Search results: sort, filter, paginate, empty search, then add a product to the cart."""
 
     def __init__(self, page: Page) -> None:
         super().__init__(page)
@@ -79,6 +80,74 @@ class SearchResultsPage(BasePage):
         )
         expect(hint.first).to_be_visible()
         expect(self.results).to_have_count(0)
+
+    def _four_star_link(self, *, selected: bool):
+        # The accessible name is the full aria-label. Visible text is split
+        # across the star icon and "& Up".
+        pattern = (
+            r"Remove 4 Stars\s*&\s*Up filter"
+            if selected
+            else r"Apply 4 Stars\s*&\s*Up filter"
+        )
+        return self.page.locator(SearchLocators.REFINEMENTS).get_by_role(
+            "link", name=re.compile(pattern, re.I)
+        ).first
+
+    def filter_by_four_stars_and_up(self) -> None:
+        # Step 1: Open 4 Stars & Up from the left-nav refinements
+        link = self._four_star_link(selected=False)
+        expect(link).to_be_visible()
+        link.scroll_into_view_if_needed()
+        href = link.get_attribute("href") or ""
+        match = re.search(r"[?&]rh=([^&]+)", href)
+        assert match, "4 Stars & Up filter has no refinement"
+        refinement = unquote(match.group(1))
+        parts = re.search(r"p_72:(\d+)", refinement)
+        assert parts, f"4 Stars & Up refinement is not a review filter: {refinement}"
+        star_id = parts.group(1)
+        query = self.page.locator(SearchLocators.SEARCH_INPUT).first.input_value()
+        link.click()
+        # Step 2: The results URL keeps that review refinement
+        pattern = re.compile(rf"p_72(?:%3A|:){star_id}")
+        try:
+            expect(self.page).to_have_url(pattern, timeout=8000)
+        except AssertionError:
+            target = href if href.startswith("http") else "https://www.amazon.com" + href
+            self.page.goto(target, wait_until="domcontentloaded")
+        self.wait_for_page_load()
+        self.dismiss_continue_shopping()
+        expect(self.page).to_have_url(pattern)
+        expect(self.page).to_have_url(re.compile(r"[?&]k=", re.I))
+        if query:
+            expect(self.page.locator(SearchLocators.SEARCH_INPUT).first).to_have_value(query)
+        expect(self.results.first).to_be_visible()
+
+    def expect_four_star_results(self) -> None:
+        # The selected refinement offers to remove 4 Stars & Up.
+        selected = self._four_star_link(selected=True)
+        expect(selected).to_be_visible()
+        expect(selected).to_have_attribute("aria-current", "true")
+        # Organic cards on this page are rated 4 stars or higher.
+        expect(self.results.first).to_be_visible()
+        ratings: list[float] = []
+        total = min(self.results.count(), 16)
+        for i in range(total):
+            card = self.results.nth(i)
+            if card.get_by_text(re.compile(r"^Sponsored$")).count() > 0:
+                continue
+            label = card.locator(SearchLocators.RESULT_RATING)
+            if label.count() == 0:
+                continue
+            text = " ".join((label.first.inner_text() or "").split())
+            found = re.search(r"([\d.]+)\s+out of\s+5", text, re.I)
+            if not found:
+                continue
+            ratings.append(float(found.group(1)))
+            if len(ratings) >= 5:
+                break
+        assert ratings, "No star ratings found on the filtered results"
+        low = [value for value in ratings if value < 4]
+        assert not low, f"Filtered results include ratings under 4 stars: {low}"
 
     def search_from_home(self, query: str) -> None:
         # Step 1: Open Amazon home
