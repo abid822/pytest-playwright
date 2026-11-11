@@ -23,6 +23,11 @@ class SearchLocators:
     NO_RESULTS_HEADING = "h2 span.a-size-medium.a-color-base.a-text-normal"
     # "Try checking your spelling or use more general terms"
     NO_RESULTS_HINT = "div.a-row.a-size-base.a-color-base"
+    # Left nav. "4 Stars & Up" is a link. Its accessible name starts with
+    # Apply, then Remove once that refinement is selected.
+    REFINEMENTS = "#s-refinements"
+    # "4.6 out of 5 stars" on a result card.
+    RESULT_RATING = "span.a-icon-alt"
 
 
 class LanguageLocators:
