@@ -10,3 +10,7 @@ def test_pet_supplies_dogs_shows_a_price(pet_supplies_page: PetSuppliesPage):
     pet_supplies_page.open_pet_supplies()
     # Step 2: Core store categories are listed
     pet_supplies_page.expect_core_categories()
+    # Step 3: Open Dogs
+    pet_supplies_page.open_category("Dogs")
+    # Step 4: A product on that page shows a price
+    pet_supplies_page.expect_priced_product()
