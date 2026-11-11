@@ -17,9 +17,12 @@ from utils.visual import compare_screenshot
 def test_login_form_visual(login_page, sb_page):
     # Step 1: Open the sign-in form
     login_page.open_sign_in()
-    # Step 2: Compare the form screenshot to the baseline image
+    # Step 2: The email box autofocuses. That blue ring is not in the baseline.
+    login_page.defocus_email()
+    # Step 3: Compare the form. The email box is masked so a leftover ring still matches.
     compare_screenshot(
         sb_page,
         "baselines/amazon_login_form.png",
         locator=login_page.login_form(),
+        mask=[login_page.email_field()],
     )

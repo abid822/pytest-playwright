@@ -48,12 +48,7 @@ jobs:
           DEFAULT_TIMEOUT_MS: "15000"
           VIEWPORT_WIDTH: "1280"
           VIEWPORT_HEIGHT: "720"
-        run: |
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            pytest -n auto --reruns 1 tests/test_sell.py tests/test_login.py::test_invalid_login
-          else
-            pytest -n auto -m "not ci_skip" --reruns 1
-          fi
+        run: pytest -n auto -m "not ci_skip" --reruns 1
 
       - name: Upload reports
         if: always()
