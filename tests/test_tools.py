@@ -10,3 +10,7 @@ def test_tools_power_hand_tools_shows_a_price(tools_page: ToolsPage):
     tools_page.open_tools()
     # Step 2: Core store categories are listed
     tools_page.expect_core_categories()
+    # Step 3: Open Power & Hand Tools
+    tools_page.open_category("Power & Hand Tools")
+    # Step 4: A product on that page shows a price
+    tools_page.expect_priced_product()
