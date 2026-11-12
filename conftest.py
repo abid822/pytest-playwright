@@ -34,6 +34,7 @@ from pages.sell_page import SellPage
 from pages.sports_page import SportsPage
 from pages.video_games_page import VideoGamesPage
 from pages.pet_supplies_page import PetSuppliesPage
+from pages.product_page import ProductPage
 from utils.friendly_report import (
     ReportCollector,
     TestRecord,
@@ -188,6 +189,11 @@ def video_games_page(sb_page) -> VideoGamesPage:
 @pytest.fixture
 def pet_supplies_page(sb_page) -> PetSuppliesPage:
     return PetSuppliesPage(sb_page)
+
+
+@pytest.fixture
+def product_page(sb_page) -> ProductPage:
+    return ProductPage(sb_page)
 
 
 @pytest.fixture
