@@ -6,6 +6,7 @@ from pages.tools_page import ToolsPage
 @pytest.mark.desktop_only
 @pytest.mark.tools
 def test_tools_power_hand_tools_shows_a_price(tools_page: ToolsPage):
+    """Opens Tools & Home Improvement, checks the store categories, and opens Power & Hand Tools to see a price."""
     # Step 1: Open the Tools & Home Improvement store
     tools_page.open_tools()
     # Step 2: Core store categories are listed
