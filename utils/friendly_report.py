@@ -126,6 +126,10 @@ STORIES: dict[str, dict[str, str]] = {
         "title": "Pet Supplies Dogs shows a price",
         "why": "Opens Pet Supplies, checks the store categories, and opens Dogs to see a price.",
     },
+    "test_tools_power_hand_tools_shows_a_price": {
+        "title": "Tools & Home Improvement Power & Hand Tools shows a price",
+        "why": "Opens Tools & Home Improvement, checks the store categories, and opens Power & Hand Tools to see a price.",
+    },
     "test_search_result_shows_title_price_and_add_to_cart": {
         "title": "Product page shows a title, price, and Add to cart",
         "why": "Searches for batteries, opens the first result, and checks the title, price, and Add to cart.",
@@ -159,6 +163,7 @@ MARKER_LABELS = {
     "video_games": "Video Games",
     "pet_supplies": "Pet Supplies",
     "product": "Product",
+    "tools": "Tools & Home Improvement",
     "ci_skip": "Skipped in CI",
     "chromium_only": "Chromium baseline",
     "desktop_only": "Desktop only",
