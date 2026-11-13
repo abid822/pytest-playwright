@@ -108,3 +108,12 @@ class AppliancesPage(BasePage):
         expect(self.page).to_have_url(re.compile(rf"node={node}(?:&|$)"))
         expect(self.page).to_have_title(re.compile(re.escape(name), re.I))
         expect(self._category_heading(name).first).to_be_visible()
+
+    def expect_priced_product(self) -> None:
+        # A product card on the category page shows a dollar price.
+        price = self.page.locator(AppliancesLocators.PRODUCT_PRICE).first
+        expect(price).to_be_attached()
+        text = " ".join((price.text_content() or "").split())
+        assert re.search(r"\$\s*\d", text), (
+            f"Appliances product has no price: {text!r}"
+        )

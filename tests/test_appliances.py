@@ -12,3 +12,5 @@ def test_appliances_dishwashers_shows_a_price(appliances_page: AppliancesPage):
     appliances_page.expect_core_categories()
     # Step 3: Open Dishwashers
     appliances_page.open_category("Dishwashers")
+    # Step 4: A product on that page shows a price
+    appliances_page.expect_priced_product()
