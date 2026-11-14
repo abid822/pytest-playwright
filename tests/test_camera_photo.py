@@ -6,6 +6,7 @@ from pages.camera_photo_page import CameraPhotoPage
 @pytest.mark.desktop_only
 @pytest.mark.camera_photo
 def test_camera_photo_camcorders_shows_a_price(camera_photo_page: CameraPhotoPage):
+    """Opens Camera & Photo, checks the store categories, and opens Camcorders to see a price."""
     # Step 1: Open the Camera & Photo store
     camera_photo_page.open_camera_photo()
     # Step 2: Core store categories are listed
