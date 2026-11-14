@@ -67,12 +67,35 @@ class SearchResultsPage(BasePage):
         )
         expect(search).to_have_value(query)
 
-    def expect_no_results(self) -> None:
-        # The empty-state heading and the spelling hint. No product cards.
-        heading = self.page.locator(SearchLocators.NO_RESULTS_HEADING).filter(
+    def _empty_heading(self):
+        return self.page.locator(SearchLocators.NO_RESULTS_HEADING).filter(
             has_text=re.compile(r"No results for your search query", re.I)
         )
-        expect(heading.first).to_be_visible()
+
+    def _organic_cards(self):
+        # Ads use the same result row as a product. A real match has no Sponsored label.
+        return self.results.filter(
+            has_not=self.page.get_by_text(re.compile(r"^Sponsored$"))
+        )
+
+    def _expect_only_sponsored_results(self) -> None:
+        # WebKit often skips the empty-state copy and lists ads under More results.
+        more = self.page.get_by_role(
+            "heading", name=re.compile(r"^More results$", re.I)
+        )
+        expect(more).to_be_visible()
+        expect(self.results.first).to_be_visible()
+        expect(self._organic_cards()).to_have_count(0)
+
+    def expect_no_results(self) -> None:
+        # The empty-state heading and the spelling hint, with no product cards.
+        # If Amazon shows only sponsored slots, no real match is still a pass.
+        heading = self._empty_heading()
+        try:
+            expect(heading.first).to_be_visible()
+        except AssertionError:
+            self._expect_only_sponsored_results()
+            return
         hint = self.page.locator(SearchLocators.NO_RESULTS_HINT).filter(
             has_text=re.compile(
                 r"Try checking your spelling or use more general terms", re.I

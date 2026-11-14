@@ -38,17 +38,16 @@ class FooterPage(BasePage):
         self.wait_for_search_box(self.search_input)
 
     def expect_footer_columns(self, names: list[str] | None = None) -> None:
-        # Step 1: The footer is on the page
+        # Step 1: The footer is on the page. Headings below the fold are not
+        # in the tree until it lays out, so scroll it into view and wait.
         expect(self.footer).to_be_visible()
+        self.footer.scroll_into_view_if_needed()
+        heads = self.footer.locator(FooterLocators.COLUMN_HEAD)
+        expect(heads.first).to_be_visible()
         # Step 2: Each column heading is listed
-        missing = []
         for name in names or FOOTER_COLUMNS:
-            heading = self.footer.get_by_role(
-                "heading", name=re.compile(rf"^{re.escape(name)}$")
-            )
-            if heading.count() == 0:
-                missing.append(name)
-        assert not missing, f"Missing footer columns: {missing}"
+            heading = heads.filter(has_text=re.compile(rf"^{re.escape(name)}$"))
+            expect(heading.first).to_be_visible()
 
     def expect_help_links(self, names: list[str] | None = None) -> None:
         # Let Us Help You keeps these links. Other footer links come and go.
@@ -58,14 +57,11 @@ class FooterPage(BasePage):
             )
         )
         expect(column.first).to_be_visible()
-        missing = []
         for name in names or HELP_LINKS:
             link = column.get_by_role(
                 "link", name=re.compile(rf"^{re.escape(name)}$")
             )
-            if link.count() == 0:
-                missing.append(name)
-        assert not missing, f"Missing footer help links: {missing}"
+            expect(link.first).to_be_visible()
 
     def scroll_to_bottom(self) -> None:
         # Step 1: Move to the bottom so Back to top has somewhere to return from

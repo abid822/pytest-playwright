@@ -40,14 +40,14 @@ Amazon is a live site. When the continue-shopping check shows an "I am human" ch
 
 | File | What it covers |
 | --- | --- |
-| `tests/test_login.py` | Opens sign-in from the header, submits `invalidemailgmail.com`, and expects the invalid-email error plus the helper links. Also rejects each of the 20 fake pairs in `data/login_credentials.json`. Markers: `login`, `smoke` (the single bad-email check only). |
-| `tests/test_login_visual.py` | Opens sign-in and compares the login form to `baselines/amazon_login_form.png`. Markers: `login_visual`, `chromium_only`, `desktop_only`. Skipped on Firefox and WebKit because the baseline is a Chromium screenshot, and skipped with `--device mobile` because the baseline is the desktop form. |
+| `tests/test_login.py` | Opens sign-in from the header, submits `invalidemailgmail.com`, and expects the invalid-email error plus the helper links. Also rejects each of the 4 fake pairs in `data/login_credentials.json`. An Amazon puzzle challenge skips that case. Markers: `login`, `smoke` (the single bad-email check only). |
+| `tests/test_login_visual.py` | Opens sign-in and compares the login form to `baselines/amazon_login_form.png`. The email box is masked because its focus ring changes between runs. Markers: `login_visual`, `chromium_only`, `desktop_only`. Skipped on Firefox and WebKit because the baseline is a Chromium screenshot, and skipped with `--device mobile` because the baseline is the desktop form. |
 | `tests/test_nav_tabs.py` | Opens home and checks that Best Sellers, Today's Deals, Prime, and Sell are in the top nav. Markers: `smoke`, `tabs`, `desktop_only`. |
 | `tests/test_nav_container.py` | Opens home, checks the top nav strip is visible, and checks that more than five tab links are present. Markers: `tabs`, `desktop_only`. |
 | `tests/test_nav_hamburger.py` | Opens the All menu, requires a stable core set of labels (other JSON labels and extra live items are only printed), drags the scrollbar, and checks that Sign in is visible. Markers: `tabs`, `smoke`, `desktop_only`. |
 | `tests/test_cart.py` | Searches for `usb c charging cable`, adds the first result, and checks the header cart count is no longer 0. Markers: `cart`, `smoke`. |
 | `tests/test_search_pagination.py` | Searches for `hardcover notebook`, records organic titles on page 1, opens page 2, and checks the titles changed. Markers: `search`, `desktop_only`. Mobile web has no numbered page strip. |
-| `tests/test_search_no_results.py` | Searches for a query that matches nothing and checks the empty-state message, with no product cards. Marker: `search`. |
+| `tests/test_search_no_results.py` | Searches for a query that matches nothing. Checks the empty-state message when Amazon shows it, and that no unsponsored product cards are listed. Marker: `search`. |
 | `tests/test_search_four_stars.py` | Searches for `stainless steel water bottle`, applies 4 Stars & Up, and checks the filter stays selected with ratings of 4 or higher. Markers: `search`, `desktop_only`. The left-nav refinement is desktop-only. |
 | `tests/test_automotive.py` | Opens Automotive, adds a 2023 Tesla Model 3 to Your Garage, logs whether "More vehicle information needed" is showing, searches seat covers, sorts Price: Low to High, adds the first result, opens the cart, and saves screenshots of both. Markers: `automotive`, `smoke`, `ci_skip`. |
 | `tests/test_language.py` | Opens language settings from the header EN control. English stays selected, Spanish is offered, and the form is left unsaved. Marker: `language`. |
