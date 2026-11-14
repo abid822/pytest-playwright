@@ -49,6 +49,7 @@ Amazon is a live site. When the continue-shopping check shows an "I am human" ch
 | `tests/test_search_pagination.py` | Searches for `hardcover notebook`, records organic titles on page 1, opens page 2, and checks the titles changed. Markers: `search`, `desktop_only`. Mobile web has no numbered page strip. |
 | `tests/test_search_no_results.py` | Searches for a query that matches nothing and checks the empty-state message, with no product cards. Marker: `search`. |
 | `tests/test_search_four_stars.py` | Searches for `stainless steel water bottle`, applies 4 Stars & Up, and checks the filter stays selected with ratings of 4 or higher. Markers: `search`, `desktop_only`. The left-nav refinement is desktop-only. |
+| `tests/test_search_sort.py` | Searches for `coffee mug`, sorts Price: Low to High, and checks the sort stays selected with the first prices rising. Markers: `search`, `desktop_only`. The sort dropdown is desktop-only. |
 | `tests/test_automotive.py` | Opens Automotive, adds a 2023 Tesla Model 3 to Your Garage, logs whether "More vehicle information needed" is showing, searches seat covers, sorts Price: Low to High, adds the first result, opens the cart, and saves screenshots of both. Markers: `automotive`, `smoke`, `ci_skip`. |
 | `tests/test_language.py` | Opens language settings from the header EN control. English stays selected, Spanish is offered, and the form is left unsaved. Marker: `language`. |
 | `tests/test_bestsellers.py` | Opens Best Sellers, checks Books, Electronics, Home & Kitchen, and Toys & Games, then opens Electronics and checks the #1 product. Markers: `bestsellers`, `desktop_only`. The department column is desktop-only. |
@@ -123,7 +124,7 @@ HEADLESS=true pytest
 
 `-n auto` (pytest-xdist) starts one worker per CPU. Each worker opens its own browser. `reports/report.html` and `reports/pytest-debug.html` are written once, after the workers finish. Screenshot files include the worker id so they do not overwrite each other, for example `reports/amazon_login_form_actual.gw0.png` and `reports/seat_covers_cart.gw0.png`. A normal run without `-n` keeps the unsuffixed names.
 
-`pytest.ini` also defines `login`, `cart`, `tabs`, `automotive`, `search`, `language`, `bestsellers`, `help`, `deals`, `registry`, `new_releases`, `gift_cards`, `sell`, `find_a_gift`, `amazon_home`, `books`, `beauty`, `electronics`, `baby`, `footer`, `sports`, `video_games`, `pet_supplies`, `product`, `tools`, `appliances`, `ci_skip`, `chromium_only`, and `desktop_only`. `--strict-markers` is on, so an unknown marker fails collection.
+`pytest.ini` also defines `login`, `cart`, `tabs`, `automotive`, `search`, `language`, `bestsellers`, `help`, `deals`, `registry`, `new_releases`, `gift_cards`, `sell`, `find_a_gift`, `amazon_home`, `books`, `beauty`, `electronics`, `baby`, `footer`, `sports`, `video_games`, `pet_supplies`, `product`, `tools`, `appliances`, `ci_skip`, `chromium_only`, and `desktop_only`. The `search` marker covers pagination, an empty search, the 4 Stars & Up filter, and Price: Low to High sorting. `--strict-markers` is on, so an unknown marker fails collection.
 
 ## Devices
 

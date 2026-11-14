@@ -1,6 +1,7 @@
 import re
 from urllib.parse import unquote
 
+import pytest
 from playwright.sync_api import Page, expect
 
 from locators.home_locators import SearchLocators
@@ -44,6 +45,140 @@ class SearchResultsPage(BasePage):
             self.page.goto(href)
             expect(self.page).to_have_url(re.compile(r"price-asc-rank|s=price-asc"))
         expect(self.results.first).to_be_visible()
+
+    def _access_restricted(self) -> bool:
+        # Amazon sometimes answers a search with an agent interstitial.
+        heading = self.page.get_by_role(
+            "heading", name=re.compile(r"Access restricted", re.I)
+        )
+        if heading.count() and heading.first.is_visible():
+            return True
+        wall = self.page.get_by_text(re.compile(r"unauthorized AI agent", re.I))
+        return wall.count() > 0 and wall.first.is_visible()
+
+    def search_for_sort(self, query: str) -> None:
+        # Step 1: Search. One retry if the agent interstitial is in the way.
+        for attempt in range(2):
+            self.open()
+            if self._access_restricted():
+                continue
+            self._dismiss_continue_shopping()
+            search = self.page.locator(SearchLocators.SEARCH_INPUT).first
+            self.wait_for_search_box(search)
+            search.fill(query)
+            self.page.locator(SearchLocators.SEARCH_BUTTON).first.click()
+            self.wait_for_page_load()
+            self.dismiss_continue_shopping()
+            if self._access_restricted():
+                continue
+            try:
+                expect(self.page).to_have_url(re.compile(r"[?&]k=", re.I), timeout=8000)
+                # The first card can paint before the grid is ready to sort.
+                expect(self.results.nth(4)).to_be_visible(timeout=8000)
+                return
+            except AssertionError:
+                if attempt == 1 or not self._access_restricted():
+                    raise
+        pytest.skip("Amazon bot checkpoint shown")
+
+    def _low_to_high_url(self) -> str:
+        href = self.sort_select.locator(SearchLocators.SORT_LOW_TO_HIGH).get_attribute(
+            "data-url"
+        ) or ""
+        if href.startswith("/"):
+            href = "https://www.amazon.com" + href
+        return href
+
+    def _results_are_back(self) -> bool:
+        self.wait_for_page_load()
+        self.dismiss_continue_shopping()
+        if self._access_restricted():
+            return False
+        try:
+            expect(self.results.first).to_be_visible(timeout=8000)
+        except AssertionError:
+            return False
+        return True
+
+    def choose_price_low_to_high(self) -> None:
+        # Step 1: Open the Sort by menu and choose Price: Low to High.
+        native = self.sort_select
+        expect(native).to_be_attached()
+        href = self._low_to_high_url()
+        assert href, "Price: Low to High option has no data-url"
+        visible_sort = native.locator(
+            "xpath=following-sibling::span[contains(@class,'a-button')][1]"
+        )
+        expect(visible_sort).to_be_visible()
+        visible_sort.click()
+        popover_option = self.page.locator(".a-popover a, a.a-dropdown-link").filter(
+            has_text=re.compile(r"Price:\s*Low to High", re.I)
+        )
+        try:
+            popover_option.first.wait_for(state="visible", timeout=4000)
+            popover_option.first.click()
+        except Exception:
+            self.page.goto(href, wait_until="domcontentloaded")
+        # Step 2: The sorted URL should list result cards. A thin page
+        # follows the option link instead.
+        expect(self.page).to_have_url(
+            re.compile(r"price-asc-rank|s=price-asc"), timeout=8000
+        )
+        if not self._results_are_back():
+            self.page.goto(href, wait_until="domcontentloaded")
+            assert self._results_are_back(), "Sorted results did not load"
+
+    def _organic_prices(self, limit: int = 5) -> list[float]:
+        # Sponsored and out-of-stock cards are not part of the price sort.
+        expect(self.results.first).to_be_visible()
+        prices: list[float] = []
+        total = min(self.results.count(), 24)
+        for i in range(total):
+            card = self.results.nth(i)
+            if self._skip_card(card):
+                continue
+            node = card.locator(SearchLocators.RESULT_PRICE)
+            if node.count() == 0:
+                continue
+            text = " ".join((node.first.text_content() or "").split())
+            found = re.search(r"\$\s*([\d,]+(?:\.\d{1,2})?)", text)
+            if not found:
+                continue
+            prices.append(float(found.group(1).replace(",", "")))
+            if len(prices) >= limit:
+                break
+        return prices
+
+    def expect_price_low_to_high(self) -> None:
+        # The URL, the selected option, and the first listed prices agree.
+        expect(self.page).to_have_url(re.compile(r"price-asc-rank|s=price-asc"))
+        native = self.sort_select
+        expect(native).to_be_attached()
+        selected = (native.input_value() or "").strip()
+        assert selected == "price-asc-rank", (
+            f"Sort is {selected!r}, not Price: Low to High"
+        )
+        label = " ".join(
+            (native.locator(SearchLocators.SORT_LOW_TO_HIGH).first.text_content() or "").split()
+        )
+        assert re.search(r"Price:\s*Low to High", label, re.I), (
+            f"Selected sort option is {label!r}"
+        )
+        visible = native.locator(
+            "xpath=following-sibling::span[contains(@class,'a-button')][1]"
+        )
+        expect(visible).to_be_visible()
+        expect(visible).to_contain_text(re.compile(r"Price:\s*Low to High", re.I))
+        prices = self._organic_prices()
+        assert len(prices) >= 3, (
+            f"Not enough priced results to check sort order: {prices}"
+        )
+        out_of_order = [
+            (earlier, later)
+            for earlier, later in zip(prices, prices[1:])
+            if later + 0.009 < earlier
+        ]
+        assert not out_of_order, f"Prices are not low to high: {prices}"
 
     def _dismiss_continue_shopping(self) -> None:
         # Fresh sessions sometimes land on a continue-shopping check

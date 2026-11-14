@@ -15,6 +15,10 @@ class SearchLocators:
     PRICE_WHOLE = ".a-price-whole"
     ADD_TO_CART_BUTTON = "button:has-text('Add to cart')"
     SORT_SELECT = "#s-result-sort-select"  # Featured / Price: Low to High
+    # Native option for Price: Low to High. The visible control mirrors it.
+    SORT_LOW_TO_HIGH = "option[value='price-asc-rank']"
+    # Current price on a result card. Skips the struck-through list price.
+    RESULT_PRICE = ".a-price:not(.a-text-price) .a-offscreen"
     RESULT_TITLE = "h2"  # product title inside a result card
     # aria-label is "Go to page 2", "Go to page 3", ...
     PAGINATION_PAGE_LINK = "a.s-pagination-item[aria-label='Go to page {}']"
