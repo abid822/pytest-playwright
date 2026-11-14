@@ -20,6 +20,7 @@ from pages.baby_page import BabyPage
 from pages.beauty_page import BeautyPage
 from pages.bestsellers_page import BestSellersPage
 from pages.books_page import BooksPage
+from pages.camera_photo_page import CameraPhotoPage
 from pages.customer_service_page import CustomerServicePage
 from pages.deals_page import DealsPage
 from pages.electronics_page import ElectronicsPage
@@ -236,6 +237,11 @@ def beauty_page(sb_page) -> BeautyPage:
 @pytest.fixture
 def books_page(sb_page) -> BooksPage:
     return BooksPage(sb_page)
+
+
+@pytest.fixture
+def camera_photo_page(sb_page) -> CameraPhotoPage:
+    return CameraPhotoPage(sb_page)
 
 
 @pytest.fixture
