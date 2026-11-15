@@ -54,6 +54,10 @@ STORIES: dict[str, dict[str, str]] = {
         "title": "4 Stars & Up keeps highly rated results",
         "why": "Searches for a water bottle, applies 4 Stars & Up, and checks the filter stays selected with ratings of 4 or higher.",
     },
+    "test_search_suggestions_open_a_matching_result": {
+        "title": "Search suggestions open a matching result",
+        "why": "Types a search prefix, checks the suggestion list, and opens one suggestion.",
+    },
     "test_footer_back_to_top_returns_to_the_header": {
         "title": "Footer Back to top returns to the header",
         "why": "Opens Amazon home, checks the footer columns and help links, then uses Back to top.",

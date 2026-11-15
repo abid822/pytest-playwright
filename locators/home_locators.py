@@ -28,6 +28,10 @@ class SearchLocators:
     REFINEMENTS = "#s-refinements"
     # "4.6 out of 5 stars" on a result card.
     RESULT_RATING = "span.a-icon-alt"
+    # Dropdown under the search box. Keyword rows use this class.
+    # Discover pills (Laser, Optical, ...) use a different one.
+    SUGGESTIONS = "#nav-flyout-searchAjax"
+    SUGGESTION_KEYWORD = "div.s-suggestion.s-suggestion-ellipsis-direction"
 
 
 class LanguageLocators:

@@ -8,7 +8,7 @@ from pages.base_page import BasePage
 
 
 class SearchResultsPage(BasePage):
-    """Search results: sort, filter, paginate, empty search, then add a product to the cart."""
+    """Search results: suggestions, sort, filter, paginate, empty search, then add a product to the cart."""
 
     def __init__(self, page: Page) -> None:
         super().__init__(page)
@@ -148,6 +148,84 @@ class SearchResultsPage(BasePage):
         assert ratings, "No star ratings found on the filtered results"
         low = [value for value in ratings if value < 4]
         assert not low, f"Filtered results include ratings under 4 stars: {low}"
+
+    def _suggestion_rows(self):
+        return self.page.locator(SearchLocators.SUGGESTIONS).locator(
+            SearchLocators.SUGGESTION_KEYWORD
+        )
+
+    def _suggestion_label(self, row) -> str:
+        label = row.get_attribute("aria-label") or row.inner_text() or ""
+        return " ".join(label.split())
+
+    def _query_url_pattern(self, label: str):
+        parts = [re.escape(part) for part in label.split() if part]
+        joined = r"(?:\+|%20)".join(parts)
+        return re.compile(rf"[?&]k={joined}(?:&|$)", re.I)
+
+    def type_search_prefix(self, query: str) -> None:
+        # Step 1: Open Amazon home
+        self.open()
+        # Step 2: Clear the continue-shopping check when it is shown
+        self._dismiss_continue_shopping()
+        # Step 3: Type the prefix and leave the box focused so suggestions can open
+        search = self.page.locator(SearchLocators.SEARCH_INPUT).first
+        self.wait_for_search_box(search)
+        search.click()
+        search.fill(query)
+        expect(search).to_have_value(query)
+        rows = self._suggestion_rows()
+        try:
+            expect(rows.first).to_be_visible(timeout=4000)
+        except AssertionError:
+            # fill() sometimes does not fire the suggestion request
+            search.fill("")
+            search.press_sequentially(query, delay=40)
+            expect(search).to_have_value(query)
+            expect(rows.first).to_be_visible()
+
+    def expect_search_suggestions(self, query: str) -> None:
+        # The dropdown is open and at least one keyword includes the prefix.
+        flyout = self.page.locator(SearchLocators.SUGGESTIONS)
+        expect(flyout).to_be_visible()
+        rows = self._suggestion_rows()
+        expect(rows.first).to_be_visible()
+        labels = [
+            self._suggestion_label(rows.nth(i))
+            for i in range(min(rows.count(), 8))
+        ]
+        matched = [label for label in labels if query.lower() in label.lower()]
+        assert matched, f"No suggestion contains {query!r}: {labels}"
+
+    def open_matching_suggestion(self, query: str) -> None:
+        # Step 1: Open the first keyword suggestion that includes the prefix
+        rows = self._suggestion_rows()
+        expect(rows.first).to_be_visible()
+        chosen = None
+        label = ""
+        for i in range(min(rows.count(), 8)):
+            text = self._suggestion_label(rows.nth(i))
+            if query.lower() in text.lower():
+                chosen = rows.nth(i)
+                label = text
+                break
+        assert chosen is not None and label, f"No suggestion contains {query!r}"
+        chosen.scroll_into_view_if_needed()
+        chosen.click()
+        # Step 2: Results open for that suggestion, with the query kept in the box
+        pattern = self._query_url_pattern(label)
+        try:
+            expect(self.page).to_have_url(pattern, timeout=8000)
+        except AssertionError:
+            if not re.search(r"[?&]k=", self.page.url or "", re.I):
+                chosen.click()
+        self.wait_for_page_load()
+        self.dismiss_continue_shopping()
+        expect(self.page).to_have_url(pattern)
+        expect(self.page.locator(SearchLocators.SEARCH_INPUT).first).to_have_value(
+            re.compile(rf"^{re.escape(label)}$", re.I)
+        )
+        expect(self.results.first).to_be_visible()
 
     def search_from_home(self, query: str) -> None:
         # Step 1: Open Amazon home
