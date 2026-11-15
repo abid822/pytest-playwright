@@ -33,6 +33,7 @@ from pages.registry_page import RegistryPage
 from pages.login_page import LoginPage
 from pages.search_results_page import SearchResultsPage
 from pages.sell_page import SellPage
+from pages.software_page import SoftwarePage
 from pages.sports_page import SportsPage
 from pages.tools_page import ToolsPage
 from pages.video_games_page import VideoGamesPage
@@ -177,6 +178,11 @@ def search_results_page(sb_page) -> SearchResultsPage:
 @pytest.fixture
 def sell_page(sb_page) -> SellPage:
     return SellPage(sb_page)
+
+
+@pytest.fixture
+def software_page(sb_page) -> SoftwarePage:
+    return SoftwarePage(sb_page)
 
 
 @pytest.fixture
