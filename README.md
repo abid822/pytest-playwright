@@ -22,8 +22,8 @@ Amazon is a live site. When the continue-shopping check shows an "I am human" ch
 | Path | Contents |
 | --- | --- |
 | `config/` | `settings.py` — base URL, browser, timeouts, viewport, and the desktop or mobile device profile |
-| `locators/` | Selectors: `HomeLocators`, `SearchLocators`, `LanguageLocators`, `LoginLocators`, `NavLocators`, `AutomotiveLocators`, `BestSellersLocators`, `CustomerServiceLocators`, `DealsLocators`, `RegistryLocators`, `NewReleasesLocators`, `GiftCardsLocators`, `SellLocators`, `FindAGiftLocators`, `AmazonHomeLocators`, `BooksLocators`, `BeautyLocators`, `ElectronicsLocators`, `BabyLocators`, `FooterLocators`, `SportsLocators`, `VideoGamesLocators`, `PetSuppliesLocators`, `ProductLocators`, `ToolsLocators`, `AppliancesLocators`, `CameraPhotoLocators`, `SoftwareLocators`, `ComputersLocators` |
-| `pages/` | Page objects: `BasePage`, `HomePage`, `LoginPage`, `SearchResultsPage`, `AutomotivePage`, `BestSellersPage`, `CustomerServicePage`, `DealsPage`, `RegistryPage`, `NewReleasesPage`, `GiftCardsPage`, `SellPage`, `FindAGiftPage`, `AmazonHomePage`, `BooksPage`, `BeautyPage`, `ElectronicsPage`, `BabyPage`, `FooterPage`, `SportsPage`, `VideoGamesPage`, `PetSuppliesPage`, `ProductPage`, `ToolsPage`, `AppliancesPage`, `CameraPhotoPage`, `SoftwarePage`, `ComputersPage` |
+| `locators/` | Selectors: `HomeLocators`, `SearchLocators`, `LanguageLocators`, `LoginLocators`, `NavLocators`, `AutomotiveLocators`, `BestSellersLocators`, `CustomerServiceLocators`, `DealsLocators`, `RegistryLocators`, `NewReleasesLocators`, `GiftCardsLocators`, `SellLocators`, `FindAGiftLocators`, `AmazonHomeLocators`, `BooksLocators`, `BeautyLocators`, `ElectronicsLocators`, `BabyLocators`, `FooterLocators`, `SportsLocators`, `VideoGamesLocators`, `PetSuppliesLocators`, `ProductLocators`, `ToolsLocators`, `AppliancesLocators`, `CameraPhotoLocators`, `SoftwareLocators`, `ComputersLocators`, `ArtsCraftsLocators` |
+| `pages/` | Page objects: `BasePage`, `HomePage`, `LoginPage`, `SearchResultsPage`, `AutomotivePage`, `BestSellersPage`, `CustomerServicePage`, `DealsPage`, `RegistryPage`, `NewReleasesPage`, `GiftCardsPage`, `SellPage`, `FindAGiftPage`, `AmazonHomePage`, `BooksPage`, `BeautyPage`, `ElectronicsPage`, `BabyPage`, `FooterPage`, `SportsPage`, `VideoGamesPage`, `PetSuppliesPage`, `ProductPage`, `ToolsPage`, `AppliancesPage`, `CameraPhotoPage`, `SoftwarePage`, `ComputersPage`, `ArtsCraftsPage` |
 | `tests/` | Pytest modules. Specs call page objects and leave selectors in `locators/` |
 | `utils/` | `friendly_report.py` (HTML summary) and `visual.py` (pixelmatch) |
 | `data/` | `hamburger_menu.json` — All menu labels. The test asserts a stable core set and warns on the rest |
@@ -75,6 +75,7 @@ Amazon is a live site. When the continue-shopping check shows an "I am human" ch
 | `tests/test_camera_photo.py` | Opens Camera & Photo, checks DSLR Cameras, Mirrorless Cameras, Lenses, and Camcorders, then opens Camcorders and checks that a product shows a price. Markers: `camera_photo`, `desktop_only`. The store category strip is desktop-only. |
 | `tests/test_software.py` | Opens Software, checks PC, Mac, Software for Students, and Small Business Software, then opens Software for Students and checks that a product shows a price. Markers: `software`, `desktop_only`. The store category strip is desktop-only. |
 | `tests/test_computers.py` | Opens Computers, checks Laptops, Desktops, Monitors, and Tablets, then opens Laptops and checks that a product shows a price. Markers: `computers`, `desktop_only`. The store category strip is desktop-only. |
+| `tests/test_arts_crafts.py` | Opens Arts, Crafts & Sewing, checks Fabric, Art Supplies, Scrapbooking, and Knitting & Crochet, then opens Fabric and checks that a product shows a price. Markers: `arts_crafts`, `desktop_only`. The store category strip is desktop-only. |
 
 ## Setup
 
@@ -127,7 +128,7 @@ HEADLESS=true pytest
 
 `-n auto` (pytest-xdist) starts one worker per CPU. Each worker opens its own browser. `reports/report.html` and `reports/pytest-debug.html` are written once, after the workers finish. Screenshot files include the worker id so they do not overwrite each other, for example `reports/amazon_login_form_actual.gw0.png` and `reports/seat_covers_cart.gw0.png`. A normal run without `-n` keeps the unsuffixed names.
 
-`pytest.ini` also defines `login`, `cart`, `tabs`, `automotive`, `search`, `language`, `bestsellers`, `help`, `deals`, `registry`, `new_releases`, `gift_cards`, `sell`, `find_a_gift`, `amazon_home`, `books`, `beauty`, `electronics`, `baby`, `footer`, `sports`, `video_games`, `pet_supplies`, `product`, `tools`, `appliances`, `camera_photo`, `software`, `computers`, `ci_skip`, `chromium_only`, and `desktop_only`. `--strict-markers` is on, so an unknown marker fails collection.
+`pytest.ini` also defines `login`, `cart`, `tabs`, `automotive`, `search`, `language`, `bestsellers`, `help`, `deals`, `registry`, `new_releases`, `gift_cards`, `sell`, `find_a_gift`, `amazon_home`, `books`, `beauty`, `electronics`, `baby`, `footer`, `sports`, `video_games`, `pet_supplies`, `product`, `tools`, `appliances`, `camera_photo`, `software`, `computers`, `arts_crafts`, `ci_skip`, `chromium_only`, and `desktop_only`. `--strict-markers` is on, so an unknown marker fails collection.
 
 ## Devices
 
