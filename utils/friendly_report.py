@@ -146,6 +146,10 @@ STORIES: dict[str, dict[str, str]] = {
         "title": "Software for Students shows a price",
         "why": "Opens Software, checks the store categories, and opens Software for Students to see a price.",
     },
+    "test_computers_laptops_shows_a_price": {
+        "title": "Computers Laptops shows a price",
+        "why": "Opens Computers, checks the store categories, and opens Laptops to see a price.",
+    },
     "test_search_result_shows_title_price_and_add_to_cart": {
         "title": "Product page shows a title, price, and Add to cart",
         "why": "Searches for batteries, opens the first result, and checks the title, price, and Add to cart.",
@@ -182,6 +186,7 @@ MARKER_LABELS = {
     "tools": "Tools & Home Improvement",
     "appliances": "Appliances",
     "camera_photo": "Camera & Photo",
+    "computers": "Computers",
     "software": "Software",
     "ci_skip": "Skipped in CI",
     "chromium_only": "Chromium baseline",
