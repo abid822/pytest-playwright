@@ -8,6 +8,7 @@ from pages.musical_instruments_page import MusicalInstrumentsPage
 def test_musical_instruments_amplifiers_shows_a_price(
     musical_instruments_page: MusicalInstrumentsPage,
 ):
+    """Opens Musical Instruments, checks the store categories, and opens Amplifiers & Effects to see a price."""
     # Step 1: Open the Musical Instruments store
     musical_instruments_page.open_musical_instruments()
     # Step 2: Core store categories are listed
