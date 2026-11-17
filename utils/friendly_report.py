@@ -158,6 +158,10 @@ STORIES: dict[str, dict[str, str]] = {
         "title": "Arts, Crafts & Sewing Fabric shows a price",
         "why": "Opens Arts, Crafts & Sewing, checks the store categories, and opens Fabric to see a price.",
     },
+    "test_musical_instruments_amplifiers_shows_a_price": {
+        "title": "Musical Instruments Amplifiers & Effects shows a price",
+        "why": "Opens Musical Instruments, checks the store categories, and opens Amplifiers & Effects to see a price.",
+    },
     "test_search_result_shows_title_price_and_add_to_cart": {
         "title": "Product page shows a title, price, and Add to cart",
         "why": "Searches for batteries, opens the first result, and checks the title, price, and Add to cart.",
@@ -197,6 +201,7 @@ MARKER_LABELS = {
     "computers": "Computers",
     "software": "Software",
     "arts_crafts": "Arts, Crafts & Sewing",
+    "musical_instruments": "Musical Instruments",
     "ci_skip": "Skipped in CI",
     "chromium_only": "Chromium baseline",
     "desktop_only": "Desktop only",
