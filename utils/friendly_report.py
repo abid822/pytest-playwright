@@ -58,6 +58,10 @@ STORIES: dict[str, dict[str, str]] = {
         "title": "Search suggestions open a matching result",
         "why": "Types a search prefix, checks the suggestion list, and opens one suggestion.",
     },
+    "test_search_books_department_keeps_book_results": {
+        "title": "Books department search stays in Books",
+        "why": "Opens the header department list, checks the core departments, and searches Books so the results stay in Books.",
+    },
     "test_footer_back_to_top_returns_to_the_header": {
         "title": "Footer Back to top returns to the header",
         "why": "Opens Amazon home, checks the footer columns and help links, then uses Back to top.",

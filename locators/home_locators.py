@@ -32,6 +32,10 @@ class SearchLocators:
     # Discover pills (Laser, Optical, ...) use a different one.
     SUGGESTIONS = "#nav-flyout-searchAjax"
     SUGGESTION_KEYWORD = "div.s-suggestion.s-suggestion-ellipsis-direction"
+    # Header department list next to the search box. "All" is the default.
+    # Books is search-alias=stripbooks. The short label sits beside the select.
+    DEPARTMENT_SELECT = "#searchDropdownBox"
+    DEPARTMENT_LABEL = "#nav-search-label-id"
 
 
 class LanguageLocators:
