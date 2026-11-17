@@ -12,3 +12,7 @@ def test_musical_instruments_amplifiers_shows_a_price(
     musical_instruments_page.open_musical_instruments()
     # Step 2: Core store categories are listed
     musical_instruments_page.expect_core_categories()
+    # Step 3: Open Amplifiers & Effects
+    musical_instruments_page.open_category("Amplifiers & Effects")
+    # Step 4: A product on that page shows a price
+    musical_instruments_page.expect_priced_product()
