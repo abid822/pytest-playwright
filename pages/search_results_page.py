@@ -1,5 +1,5 @@
 import re
-from urllib.parse import unquote
+from urllib.parse import quote_plus, unquote
 
 from playwright.sync_api import Page, expect
 
@@ -7,8 +7,17 @@ from locators.home_locators import SearchLocators
 from pages.base_page import BasePage
 
 
+# Departments that stay in the header search list. Seasonal stores rotate.
+CORE_SEARCH_DEPARTMENTS = {
+    "Books": "stripbooks",
+    "Electronics": "electronics",
+    "Computers": "computers",
+    "Toys & Games": "toys-and-games",
+}
+
+
 class SearchResultsPage(BasePage):
-    """Search results: suggestions, sort, filter, paginate, empty search, then add a product to the cart."""
+    """Search results: suggestions, department, sort, filter, paginate, empty search, then add a product to the cart."""
 
     def __init__(self, page: Page) -> None:
         super().__init__(page)
@@ -225,6 +234,91 @@ class SearchResultsPage(BasePage):
         expect(self.page.locator(SearchLocators.SEARCH_INPUT).first).to_have_value(
             re.compile(rf"^{re.escape(label)}$", re.I)
         )
+        expect(self.results.first).to_be_visible()
+
+    def _department_select(self):
+        return self.page.locator(SearchLocators.DEPARTMENT_SELECT)
+
+    def _department_option(self, name: str):
+        # Option text is the department name. Match the whole label so
+        # "Books" does not also match "Audible Books & Originals".
+        return self._department_select().locator("option").filter(
+            has_text=re.compile(rf"^\s*{re.escape(name)}\s*$")
+        )
+
+    def open_search_departments(self) -> None:
+        # Step 1: Open Amazon home
+        self.open()
+        # Step 2: Clear the continue-shopping check when it is shown
+        self._dismiss_continue_shopping()
+        # Step 3: The header department list is on screen
+        expect(self._department_select()).to_be_visible()
+
+    def expect_core_search_departments(
+        self, names: dict[str, str] | None = None
+    ) -> None:
+        # The header list still offers the core departments.
+        select = self._department_select()
+        expect(select).to_be_visible()
+        missing = []
+        for name, alias in (names or CORE_SEARCH_DEPARTMENTS).items():
+            option = self._department_option(name)
+            if option.count() == 0:
+                missing.append(name)
+                continue
+            value = option.first.get_attribute("value") or ""
+            if alias not in value:
+                missing.append(f"{name} ({value})")
+        assert not missing, f"Missing search departments: {missing}"
+
+    def search_in_department(self, name: str, query: str) -> None:
+        # Step 1: Choose that department in the header list
+        select = self._department_select()
+        expect(select).to_be_visible()
+        option = self._department_option(name)
+        expect(option).to_have_count(1)
+        value = option.first.get_attribute("value") or ""
+        assert value.startswith("search-alias="), f"{name} department has no alias"
+        alias = value.split("=", 1)[1]
+        select.select_option(value)
+        expect(select).to_have_value(value)
+        expect(self.page.locator(SearchLocators.DEPARTMENT_LABEL)).to_have_text(
+            re.compile(rf"^\s*{re.escape(name)}\s*$", re.I)
+        )
+        # Step 2: Search inside that department
+        search = self.page.locator(SearchLocators.SEARCH_INPUT).first
+        self.wait_for_search_box(search)
+        search.fill(query)
+        self.page.locator(SearchLocators.SEARCH_BUTTON).first.click()
+        # Step 3: Results keep the department. If the widget did not, open that search URL.
+        pattern = re.compile(rf"[?&]i={re.escape(alias)}(?:&|$)")
+        query_pattern = re.compile(rf"[?&]k={re.escape(query)}(?:&|$)", re.I)
+        try:
+            expect(self.page).to_have_url(pattern, timeout=8000)
+        except AssertionError:
+            self.page.goto(
+                f"https://www.amazon.com/s?k={quote_plus(query)}&i={alias}",
+                wait_until="domcontentloaded",
+            )
+        self.wait_for_page_load()
+        self.dismiss_continue_shopping()
+        expect(self.page).to_have_url(pattern)
+        expect(self.page).to_have_url(query_pattern)
+        expect(self.page.locator(SearchLocators.SEARCH_INPUT).first).to_have_value(query)
+        expect(self.results.first).to_be_visible()
+
+    def expect_department_results(self, name: str, query: str) -> None:
+        # The header list stays on that department, and result cards are showing.
+        select = self._department_select()
+        expect(select).to_be_visible()
+        option = self._department_option(name)
+        expect(option).to_have_count(1)
+        value = option.first.get_attribute("value") or ""
+        expect(select).to_have_value(value)
+        expect(self.page.locator(SearchLocators.DEPARTMENT_LABEL)).to_have_text(
+            re.compile(rf"^\s*{re.escape(name)}\s*$", re.I)
+        )
+        expect(self.page.locator(SearchLocators.SEARCH_INPUT).first).to_have_value(query)
         expect(self.results.first).to_be_visible()
 
     def search_from_home(self, query: str) -> None:
