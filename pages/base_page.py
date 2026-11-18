@@ -164,10 +164,15 @@ class BasePage:
         return None
 
     def _error_page_shown(self) -> bool:
-        # Amazon's dog page. The search box is a different control, and the title is blank.
+        # Amazon's dog page. The logo link points at cs_503. The search box is different.
         if "cs_503" in (self.page.url or ""):
             return True
         try:
+            marker = self.page.locator(
+                "a[href*='cs_503'], img[alt*='went wrong'], img[alt*='Dogs of Amazon']"
+            )
+            if marker.count() and marker.first.is_visible():
+                return True
             link = self.page.get_by_role(
                 "link", name=re.compile(r"something went wrong on our end", re.I)
             )

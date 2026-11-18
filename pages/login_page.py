@@ -63,12 +63,18 @@ class LoginPage(HomePage):
         try:
             expect(self.email).to_be_visible(timeout=6000)
         except AssertionError:
-            if not href:
-                href = sign_link.get_attribute("href") or ""
+            self.dismiss_continue_shopping()
+            if not href and sign_link.count():
+                try:
+                    href = sign_link.get_attribute("href", timeout=2000) or ""
+                except Exception:
+                    href = ""
             if href.startswith("/"):
                 href = "https://www.amazon.com" + href
             assert href, "Sign in control has no href"
-            self.page.goto(href)
+            self.page.goto(href, wait_until="domcontentloaded")
+            self.wait_for_page_load()
+            self.dismiss_continue_shopping()
             expect(self.email).to_be_visible()
 
     def _open_mobile_sign_in(self) -> None:

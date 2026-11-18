@@ -339,7 +339,10 @@ class SearchResultsPage(BasePage):
         self.wait_for_search_box(search)
         search.fill(query)
         self.page.locator(SearchLocators.SEARCH_BUTTON).first.click()
-        # Step 4: Wait until result cards are on the page
+        # Step 4: Wait until result cards are on the page.
+        # A 503 dog page can keep the search URL and show no cards.
+        self.wait_for_page_load()
+        self.dismiss_continue_shopping()
         expect(self.page).to_have_url(re.compile(r"[?&](?:k|field-keywords)=", re.I))
         expect(self.results.first).to_be_visible()
 
