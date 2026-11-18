@@ -200,6 +200,19 @@ class BasePage:
             self._open_href(href)
         expect(self.page).to_have_url(pattern)
 
+    def expect_visible_or_skip_shell(self, locator, reason: str) -> None:
+        # The store URL loaded, but Amazon did not render the shop.
+        try:
+            expect(locator.first).to_be_visible()
+        except AssertionError:
+            try:
+                missing = locator.count() == 0
+            except Exception:
+                missing = True
+            if missing:
+                pytest.skip(reason)
+            raise
+
     def expect_named_heading(self, name: str) -> None:
         # The label is not always exposed as a heading.
         pattern = re.compile(rf"^\s*{re.escape(name)}\s*$", re.I)

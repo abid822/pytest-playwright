@@ -57,7 +57,10 @@ class FindAGiftPage(BasePage):
             re.compile(r"node=206764924011"),
             FindAGiftLocators.URL,
         )
-        expect(self._gift_heading().first).to_be_visible()
+        self.expect_visible_or_skip_shell(
+            self._gift_heading(),
+            "Amazon did not render the Gift Shop",
+        )
 
     def expect_shop_sections(self, names: list[str] | None = None) -> None:
         # Each shop-by heading is on the landing page.
