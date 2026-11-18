@@ -46,7 +46,7 @@ class MusicalInstrumentsPage(BasePage):
         # Step 2: The Musical Instruments store is showing, not a bot checkpoint.
         # The document title says "Musical Instruments".
         expect(self.page).to_have_url(re.compile(r"node=11091801"))
-        expect(self.page).to_have_title(re.compile(r"Musical Instruments", re.I))
+        self.expect_title(re.compile(r"Musical Instruments", re.I))
         expect(self.subnav).to_be_visible()
 
     def _category_link(self, name: str):
@@ -108,7 +108,7 @@ class MusicalInstrumentsPage(BasePage):
             self.wait_for_page_load()
             self.dismiss_continue_shopping()
         expect(self.page).to_have_url(re.compile(rf"node={node}(?:&|$)"))
-        expect(self.page).to_have_title(re.compile(re.escape(name), re.I))
+        self.expect_title(re.compile(re.escape(name), re.I))
         expect(self._category_heading(name).first).to_be_visible()
 
     def expect_priced_product(self) -> None:

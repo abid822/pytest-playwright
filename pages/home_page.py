@@ -75,7 +75,7 @@ class HomePage(BasePage):
         # Step 3: Wait for results. A bot checkpoint skips the test.
         self.wait_for_page_load()
         self.dismiss_continue_shopping()
-        expect(self.page).to_have_url(re.compile(r"k=", re.I))
+        expect(self.page).to_have_url(self.search_url_pattern())
 
     def expect_nav_container(self) -> None:
         # Step 1: Top nav strip is on screen
@@ -222,24 +222,44 @@ class HomePage(BasePage):
             f"Menu did not scroll; scrollTop={metrics['scrollTop']}"
         )
 
+    def _language_title(self):
+        # Amazon sometimes renders this label as plain text, not a heading.
+        return self.page.get_by_text(re.compile(r"Language Settings", re.I)).locator(
+            "visible=true"
+        )
+
+    def _english_radio(self):
+        # The choice is a radio. The old input name is not always in the DOM.
+        by_role = self.page.get_by_role(
+            "radio", name=re.compile(r"English\s*-\s*EN", re.I)
+        )
+        by_input = self.page.locator(LanguageLocators.ENGLISH_RADIO)
+        return by_role.or_(by_input)
+
+    def _spanish_radio(self):
+        by_role = self.page.get_by_role("radio", name=re.compile(r"español", re.I))
+        by_input = self.page.locator(LanguageLocators.SPANISH_RADIO)
+        return by_role.or_(by_input)
+
     def _language_form_ready(self) -> bool:
         # The preferences form lists English. Radios can be visually hidden.
         try:
-            self.page.get_by_role("heading", name=re.compile(r"Language Settings", re.I)).wait_for(
-                state="visible", timeout=8000
-            )
+            self._english_radio().first.wait_for(state="attached", timeout=8000)
             return True
         except Exception:
             return False
 
     def open_language_settings(self) -> None:
         # Mobile web puts language in the footer, not the desktop EN flyout.
-        if self.language_control.count() == 0 or not self.language_control.is_visible():
+        # is_visible() is instant and misses a control that has not laid out yet.
+        try:
+            expect(self.language_control).to_be_visible(timeout=8000)
+        except AssertionError:
             self._open_mobile_language_settings()
             return
         # Step 1: Header language control is on screen and can be clicked.
         # WebKit sometimes gives the inner link a zero box; the wrapper is the fallback.
-        expect(self.language_control).to_be_visible()
+        self.language_control.scroll_into_view_if_needed()
         link = self.language_link
         href = ""
         if link.count():
@@ -287,13 +307,13 @@ class HomePage(BasePage):
         # Language form is showing, English is the current choice, Spanish is offered.
         # Do not save — that would switch the shared browser session.
         # Use the radio roles. A hidden header span also contains "English - EN".
-        expect(self.page.get_by_role("heading", name=re.compile(r"Language Settings", re.I))).to_be_visible()
-        english = self.page.locator(LanguageLocators.ENGLISH_RADIO)
-        spanish = self.page.locator(LanguageLocators.SPANISH_RADIO)
-        expect(english).to_be_checked()
-        expect(spanish).not_to_be_checked()
-        expect(english).to_have_accessible_name(re.compile(r"English\s*-\s*EN", re.I))
-        expect(spanish).to_have_accessible_name(re.compile(r"español", re.I))
+        expect(self._language_title().first).to_be_visible()
+        english = self._english_radio()
+        spanish = self._spanish_radio()
+        expect(english.first).to_be_checked()
+        expect(spanish.first).not_to_be_checked()
+        expect(english.first).to_have_accessible_name(re.compile(r"English\s*-\s*EN", re.I))
+        expect(spanish.first).to_have_accessible_name(re.compile(r"español", re.I))
         expect(self.page.get_by_role("button", name=re.compile(r"^Save Changes$", re.I))).to_be_visible()
 
     def expect_cart_not_empty(self) -> None:

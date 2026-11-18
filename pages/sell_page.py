@@ -40,7 +40,7 @@ class SellPage(BasePage):
             self.dismiss_continue_shopping()
         # Step 2: The Sell page is showing, not a bot checkpoint
         expect(self.page).to_have_url(re.compile(r"node=12766669011"))
-        expect(self.page).to_have_title(re.compile(r"Sell", re.I))
+        self.expect_title(re.compile(r"Sell", re.I))
         expect(self._sell_heading().first).to_be_visible()
 
     def expect_start_steps(self, names: list[str] | None = None) -> None:
@@ -70,7 +70,7 @@ class SellPage(BasePage):
         self.dismiss_continue_shopping()
         # Step 2: Pricing page lists the plans
         expect(self.page).to_have_url(re.compile(r"sell\.amazon\.com/pricing", re.I))
-        expect(self.page).to_have_title(re.compile(r"sell on Amazon", re.I))
+        self.expect_title(re.compile(r"sell on Amazon", re.I))
         expect(
             self.page.get_by_role(
                 "heading", name=re.compile(r"^Selling plans$", re.I)

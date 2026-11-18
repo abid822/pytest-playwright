@@ -102,13 +102,14 @@ def _start_tracing(context) -> None:
 
 def _stop_tracing(context, test_name: str, *, failed: bool) -> None:
     path = _trace_zip(test_name)
-    if failed:
-        path.parent.mkdir(parents=True, exist_ok=True)
-        context.tracing.stop(path=path)
-        return
     try:
+        if failed:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            context.tracing.stop(path=path)
+            return
         context.tracing.stop()
     except PlaywrightError:
+        # The browser can already be gone. Teardown should not hide the test result.
         return
     if path.is_file():
         path.unlink()
@@ -126,16 +127,23 @@ def _outcome_failed(node) -> bool:
 def browser_managed():
     # One browser for the run. Each test gets its own context so cookies,
     # the cart, and a bot flag do not leak into the next test.
+    # If that browser dies, the next test launches a new one.
     (ROOT / "reports").mkdir(exist_ok=True)
     with sync_playwright() as playwright:
-        browser = _launch_browser(playwright)
-        yield playwright, browser
-        browser.close()
+        holder = {"playwright": playwright, "browser": _launch_browser(playwright)}
+        yield holder
+        browser = holder["browser"]
+        if browser.is_connected():
+            browser.close()
 
 
 @pytest.fixture
 def browser_context_managed(browser_managed):
-    playwright, browser = browser_managed
+    playwright = browser_managed["playwright"]
+    browser = browser_managed["browser"]
+    if not browser.is_connected():
+        browser = _launch_browser(playwright)
+        browser_managed["browser"] = browser
     context = browser.new_context(**_context_options(playwright))
     context.set_default_timeout(settings.default_timeout_ms)
     expect.set_options(timeout=settings.default_timeout_ms)

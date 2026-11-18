@@ -43,7 +43,7 @@ class BabyPage(BasePage):
             self.dismiss_continue_shopping()
         # Step 2: The Baby store is showing, not a bot checkpoint
         expect(self.page).to_have_url(re.compile(r"node=165796011"))
-        expect(self.page).to_have_title(re.compile(r"Baby", re.I))
+        self.expect_title(re.compile(r"Baby", re.I))
         expect(self._baby_heading().first).to_be_visible()
         expect(
             self.page.get_by_role(
@@ -110,7 +110,7 @@ class BabyPage(BasePage):
             self.wait_for_page_load()
             self.dismiss_continue_shopping()
         expect(self.page).to_have_url(re.compile(rf"node={node}(?:&|$)"))
-        expect(self.page).to_have_title(re.compile(re.escape(name), re.I))
+        self.expect_title(re.compile(re.escape(name), re.I))
         expect(self._category_heading(name).first).to_be_visible()
 
     def expect_priced_product(self) -> None:

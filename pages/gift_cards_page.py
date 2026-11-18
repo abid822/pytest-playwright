@@ -85,18 +85,9 @@ class GiftCardsPage(BasePage):
         href = link.get_attribute("href") or ""
         link.scroll_into_view_if_needed()
         link.click()
-        # Step 2: If the click stays on the shop, follow the href
-        try:
-            expect(self.page).to_have_url(re.compile(r"/dp/", re.I), timeout=8000)
-        except AssertionError:
-            if href.startswith("/"):
-                href = "https://www.amazon.com" + href
-            assert href, "Birthday eGift link has no href"
-            self.page.goto(href, wait_until="domcontentloaded")
-        self.wait_for_page_load()
-        self.dismiss_continue_shopping()
-        expect(self.page).to_have_url(re.compile(r"/dp/", re.I))
-        expect(self.page).to_have_title(re.compile(r"Gift Card", re.I))
+        # Step 2: Follow the href when the click stays on the shop or returns home.
+        self.expect_url_or_follow(re.compile(r"/dp/", re.I), href)
+        self.expect_title(re.compile(r"Gift Card", re.I))
 
     def expect_priced_egift(self) -> None:
         # The detail page names the card and shows a dollar price.

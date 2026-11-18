@@ -40,7 +40,7 @@ STORIES: dict[str, dict[str, str]] = {
     },
     "test_login_form_visual": {
         "title": "Sign-in form still looks the same",
-        "why": "Compares the live sign-in card to the baseline screenshot. A fail means Amazon changed the layout.",
+        "why": "Compares the live sign-in card to the baseline screenshot. The email box is masked because its focus ring changes. A fail means Amazon changed the layout.",
     },
     "test_search_results_second_page_lists_different_products": {
         "title": "Search page 2 is a new set of products",
@@ -64,7 +64,7 @@ STORIES: dict[str, dict[str, str]] = {
     },
     "test_footer_back_to_top_returns_to_the_header": {
         "title": "Footer Back to top returns to the header",
-        "why": "Opens Amazon home, checks the footer columns and help links, then uses Back to top.",
+        "why": "Opens Amazon home. The four-column footer is checked, then Back to top. The shorter legal card is checked when Amazon serves that footer instead.",
     },
     "test_language_settings_keep_english_and_offer_spanish": {
         "title": "Language settings offer English and Spanish",

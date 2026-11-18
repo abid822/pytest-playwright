@@ -43,7 +43,7 @@ class ElectronicsPage(BasePage):
             self.dismiss_continue_shopping()
         # Step 2: The Electronics store is showing, not a bot checkpoint
         expect(self.page).to_have_url(re.compile(r"node=172282"))
-        expect(self.page).to_have_title(re.compile(r"Electronics", re.I))
+        self.expect_title(re.compile(r"Electronics", re.I))
         expect(self._electronics_heading().first).to_be_visible()
         expect(
             self.page.get_by_role(
@@ -91,7 +91,7 @@ class ElectronicsPage(BasePage):
         self.wait_for_page_load()
         self.dismiss_continue_shopping()
         expect(self.page).to_have_url(re.compile(rf"node={node}(?:&|$)"))
-        expect(self.page).to_have_title(re.compile(re.escape(name), re.I))
+        self.expect_title(re.compile(re.escape(name), re.I))
         expect(
             self.page.get_by_role(
                 "heading", name=re.compile(rf"^{re.escape(name)}$", re.I)

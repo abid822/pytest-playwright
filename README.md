@@ -4,7 +4,7 @@
 
 Pytest and Playwright tests for Amazon.com. Each check is a page object that calls locators: specs hold the steps, `pages/` holds the clicks and waits, and `locators/` holds the selectors. Visual checks compare a screenshot to a saved image with pixelmatch. Every run also writes a plain-language HTML report.
 
-Amazon is a live site. When the continue-shopping check shows an "I am human" checkbox and a Continue button, the suite checks the box and clicks Continue. If that page is still up afterward, or an AI-agent interstitial appears, the test is skipped. A regional layout or an experiment can still fail a test when the code has not changed.
+Amazon is a live site. When the continue-shopping check shows an "I am human" checkbox and a Continue button, the suite checks the box and clicks Continue. If that page is still up afterward, or an AI-agent interstitial appears, the test is skipped. An access-restricted page, a sign-in puzzle, Amazon's error page, or a page with an empty title is skipped the same way. A regional layout or an experiment can still fail a test when the code has not changed.
 
 ## Features
 
@@ -41,7 +41,7 @@ Amazon is a live site. When the continue-shopping check shows an "I am human" ch
 | File | What it covers |
 | --- | --- |
 | `tests/test_login.py` | Opens sign-in from the header, submits `invalidemailgmail.com`, and expects the invalid-email error plus the helper links. Also rejects each of the 20 fake pairs in `data/login_credentials.json`. Markers: `login`, `smoke` (the single bad-email check only). |
-| `tests/test_login_visual.py` | Opens sign-in and compares the login form to `baselines/amazon_login_form.png`. Markers: `login_visual`, `chromium_only`, `desktop_only`. Skipped on Firefox and WebKit because the baseline is a Chromium screenshot, and skipped with `--device mobile` because the baseline is the desktop form. |
+| `tests/test_login_visual.py` | Opens sign-in and compares the login form to `baselines/amazon_login_form.png`. The email box is masked because its focus ring changes between runs. Markers: `login_visual`, `chromium_only`, `desktop_only`. Skipped on Firefox and WebKit because the baseline is a Chromium screenshot, and skipped with `--device mobile` because the baseline is the desktop form. |
 | `tests/test_nav_tabs.py` | Opens home and checks that Best Sellers, Today's Deals, Prime, and Sell are in the top nav. Markers: `smoke`, `tabs`, `desktop_only`. |
 | `tests/test_nav_container.py` | Opens home, checks the top nav strip is visible, and checks that more than five tab links are present. Markers: `tabs`, `desktop_only`. |
 | `tests/test_nav_hamburger.py` | Opens the All menu, requires a stable core set of labels (other JSON labels and extra live items are only printed), drags the scrollbar, and checks that Sign in is visible. Markers: `tabs`, `smoke`, `desktop_only`. |
@@ -66,7 +66,7 @@ Amazon is a live site. When the continue-shopping check shows an "I am human" ch
 | `tests/test_beauty.py` | Opens Beauty, checks Makeup, Skin Care, Hair Care, and Fragrance, then opens Makeup and checks that a product shows a price. Markers: `beauty`, `desktop_only`. The store category strip is desktop-only. |
 | `tests/test_electronics.py` | Opens Electronics, checks Cell Phones, Computers, TV & Video, and Headphones, then opens Headphones and checks that a product shows a price. Markers: `electronics`, `desktop_only`. The store category strip is desktop-only. |
 | `tests/test_baby.py` | Opens the Baby store, checks Strollers, Car Seats, Nursery, and Feeding, then opens Strollers and checks that a product shows a price. Markers: `baby`, `desktop_only`. The store category strip is desktop-only. |
-| `tests/test_footer.py` | Opens the home footer, checks Get to Know Us, Make Money with Us, Amazon Payment Products, and Let Us Help You, then uses Back to top. Markers: `footer`, `desktop_only`. The four-column footer is desktop-only. |
+| `tests/test_footer.py` | Opens the home footer. When the four columns are there, checks Get to Know Us, Make Money with Us, Amazon Payment Products, and Let Us Help You, then uses Back to top. When Amazon serves the shorter legal card, checks Customer Service, About Amazon, Conditions of Use, and Privacy Notice. Markers: `footer`, `desktop_only`. |
 | `tests/test_sports.py` | Opens Sports & Outdoors, checks Outdoor Recreation, Cycling, Exercise & Fitness, and Golf, then opens Cycling and checks that a product shows a price. Markers: `sports`, `desktop_only`. The store category strip is desktop-only. |
 | `tests/test_video_games.py` | Opens Video Games, checks PS5, Xbox Series X\|S, Switch, and PC, then opens Digital Games and checks that a product shows a price. Markers: `video_games`, `desktop_only`. The store category strip is desktop-only. |
 | `tests/test_pet_supplies.py` | Opens Pet Supplies, checks Dogs, Cats, Fish & Aquatics, and Small Animals, then opens Dogs and checks that a product shows a price. Markers: `pet_supplies`, `desktop_only`. The store category strip is desktop-only. |

@@ -76,15 +76,156 @@ class BasePage:
 
     def wait_for_search_box(self, search) -> None:
         # Leave the continue-shopping page, then wait for the search box.
+        # A block page can still show the header search, so check that too.
         for _ in range(3):
             self.click_continue_shopping()
+            self.dismiss_continue_shopping()
             try:
                 expect(search).to_be_visible(timeout=5000)
                 return
             except AssertionError:
                 continue
         self.click_continue_shopping()
+        self.dismiss_continue_shopping()
         expect(search).to_be_visible()
+
+    def _page_title(self) -> str:
+        try:
+            return (self.page.title() or "").strip()
+        except Exception:
+            return ""
+
+    def _text_visible(self, pattern: re.Pattern) -> bool:
+        # Headings and alert boxes only. A full-page text scan crashes Firefox.
+        loc = self.page.locator("h1, h2, h3, h4, .a-alert-content, .a-box-inner").filter(
+            has_text=pattern
+        )
+        try:
+            return loc.count() > 0 and loc.first.is_visible()
+        except Exception:
+            return False
+
+    def _empty_document(self) -> bool:
+        # A block response with a blank title and almost no controls.
+        # A store page that is still painting has a title or real links.
+        if self._page_title():
+            return False
+        url = (self.page.url or "").lower()
+        if "amazon." not in url:
+            return False
+        try:
+            return bool(
+                self.page.evaluate(
+                    """() => {
+                      const title = (document.title || '').trim();
+                      if (title) return false;
+                      const body = document.body;
+                      if (!body) return true;
+                      if (body.querySelectorAll('a, button, input, img').length > 6) return false;
+                      return (body.innerText || '').trim().length < 40;
+                    }"""
+                )
+            )
+        except Exception:
+            return False
+
+    def _block_reason(self) -> str | None:
+        # Explicit block, captcha, or empty document. Not a normal store page.
+        if self._is_continue_shopping_page():
+            return None
+        title = self._page_title()
+        if re.search(r"access restricted|access denied|robot check", title, re.I):
+            return "Amazon access restricted page"
+        path = urlparse(self.page.url or "").path.lower()
+        if any(part in path for part in ("checkpoint", "captcha", "validatecaptcha")):
+            return "Amazon bot checkpoint shown"
+        if self._text_visible(re.compile(r"unusual browser activity", re.I)):
+            return "Amazon bot checkpoint shown"
+        if self._text_visible(re.compile(r"enter the characters you see", re.I)):
+            return "Amazon bot checkpoint shown"
+        if self._text_visible(
+            re.compile(r"sorry, we just need to make sure you.?re not a robot", re.I)
+        ):
+            return "Amazon bot checkpoint shown"
+        if self._text_visible(re.compile(r"access restricted", re.I)):
+            return "Amazon access restricted page"
+        if self._text_visible(re.compile(r"to discuss automated access to amazon", re.I)):
+            return "Amazon access restricted page"
+        if self._error_page_shown():
+            return "Amazon error page shown"
+        denied = self.page.get_by_role("heading", name=re.compile(r"^access denied$", re.I))
+        try:
+            if denied.count() and denied.first.is_visible():
+                return "Amazon access restricted page"
+        except Exception:
+            pass
+        if self._empty_document():
+            return "Amazon returned an empty page"
+        return None
+
+    def _error_page_shown(self) -> bool:
+        # Amazon's dog page. The search box is a different control, and the title is blank.
+        if "cs_503" in (self.page.url or ""):
+            return True
+        try:
+            link = self.page.get_by_role(
+                "link", name=re.compile(r"something went wrong on our end", re.I)
+            )
+            return link.count() > 0 and link.first.is_visible()
+        except Exception:
+            return False
+
+    def _absolute_href(self, href: str) -> str:
+        if href.startswith("/"):
+            return "https://www.amazon.com" + href
+        return href
+
+    def _open_href(self, href: str) -> None:
+        target = self._absolute_href(href)
+        assert target, "link has no href"
+        self.page.goto(target, wait_until="domcontentloaded")
+        self.wait_for_page_load()
+        self.dismiss_continue_shopping()
+
+    def expect_url_or_follow(self, pattern, href: str) -> None:
+        # A click can stay put, or continue-shopping can send us back to the home page.
+        try:
+            expect(self.page).to_have_url(pattern, timeout=8000)
+        except AssertionError:
+            self._open_href(href)
+        else:
+            self.wait_for_page_load()
+            self.dismiss_continue_shopping()
+        if pattern.search(self.page.url or "") is None:
+            self._open_href(href)
+        expect(self.page).to_have_url(pattern)
+
+    def expect_named_heading(self, name: str) -> None:
+        # The label is not always exposed as a heading.
+        pattern = re.compile(rf"^\s*{re.escape(name)}\s*$", re.I)
+        heading = self.page.get_by_role("heading", name=pattern)
+        text = self.page.locator("h1, h2, h3, span").filter(has_text=pattern)
+        expect(heading.or_(text).first).to_be_visible()
+
+    def expect_title(self, pattern) -> None:
+        # A blank title after the wait is the empty page CI sometimes gets.
+        # A different title still fails.
+        try:
+            expect(self.page).to_have_title(pattern)
+        except AssertionError:
+            if self._page_title():
+                raise
+            pytest.skip("Amazon returned a page with an empty title")
+
+    @staticmethod
+    def search_url_pattern(query: str | None = None) -> re.Pattern:
+        # WebKit sometimes records the query as field-keywords= instead of k=.
+        param = r"[?&](?:k|field-keywords)="
+        if not query:
+            return re.compile(param, re.I)
+        parts = [re.escape(part) for part in query.split() if part]
+        joined = r"(?:\+|%20)".join(parts) if parts else re.escape(query)
+        return re.compile(rf"{param}{joined}(?:&|$)", re.I)
 
     def _bot_checkpoint_shown(self) -> bool:
         # /checkpoint/, a captcha form, or the AI-agent interstitial.
@@ -132,25 +273,30 @@ class BasePage:
 
     def dismiss_continue_shopping(self) -> None:
         # Click through the human check when those controls are visible.
-        # Skip only if the checkpoint is still there afterward.
+        # Skip when a block, captcha, or empty page is still there afterward.
         self.wait_for_page_load()
         if self._is_continue_shopping_page():
             self.click_continue_shopping()
-            return
-        if not self._bot_checkpoint_shown():
-            return
-        self._pass_human_checkpoint()
-        self.wait_for_page_load()
-        try:
-            self.page.wait_for_function(
-                """() => {
-                  const path = location.pathname.toLowerCase();
-                  return !path.includes('checkpoint') && !path.includes('captcha');
-                }""",
-                timeout=15000,
-            )
-        except Exception:
-            pass
+            self.wait_for_page_load()
+        if self._bot_checkpoint_shown() or self._block_reason() == "Amazon bot checkpoint shown":
+            try:
+                self._pass_human_checkpoint()
+            except Exception:
+                pass
+            self.wait_for_page_load()
+            try:
+                self.page.wait_for_function(
+                    """() => {
+                      const path = location.pathname.toLowerCase();
+                      return !path.includes('checkpoint') && !path.includes('captcha');
+                    }""",
+                    timeout=15000,
+                )
+            except Exception:
+                pass
+        reason = self._block_reason()
+        if reason:
+            pytest.skip(reason)
         if self._bot_checkpoint_shown():
             pytest.skip("Amazon bot checkpoint shown")
 

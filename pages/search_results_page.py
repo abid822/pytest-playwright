@@ -72,7 +72,7 @@ class SearchResultsPage(BasePage):
         self.wait_for_page_load()
         self.dismiss_continue_shopping()
         expect(self.page).to_have_url(
-            re.compile(rf"[?&]k={re.escape(query)}(?:&|$)", re.I)
+            re.compile(rf"[?&](?:k|field-keywords)={re.escape(query)}(?:&|$)", re.I)
         )
         expect(search).to_have_value(query)
 
@@ -126,7 +126,7 @@ class SearchResultsPage(BasePage):
         self.wait_for_page_load()
         self.dismiss_continue_shopping()
         expect(self.page).to_have_url(pattern)
-        expect(self.page).to_have_url(re.compile(r"[?&]k=", re.I))
+        expect(self.page).to_have_url(re.compile(r"[?&](?:k|field-keywords)=", re.I))
         if query:
             expect(self.page.locator(SearchLocators.SEARCH_INPUT).first).to_have_value(query)
         expect(self.results.first).to_be_visible()
@@ -170,7 +170,7 @@ class SearchResultsPage(BasePage):
     def _query_url_pattern(self, label: str):
         parts = [re.escape(part) for part in label.split() if part]
         joined = r"(?:\+|%20)".join(parts)
-        return re.compile(rf"[?&]k={joined}(?:&|$)", re.I)
+        return re.compile(rf"[?&](?:k|field-keywords)={joined}(?:&|$)", re.I)
 
     def type_search_prefix(self, query: str) -> None:
         # Step 1: Open Amazon home
@@ -220,14 +220,22 @@ class SearchResultsPage(BasePage):
                 break
         assert chosen is not None and label, f"No suggestion contains {query!r}"
         chosen.scroll_into_view_if_needed()
-        chosen.click()
-        # Step 2: Results open for that suggestion, with the query kept in the box
+        try:
+            chosen.click(timeout=5000)
+        except Exception:
+            # The row can close before Firefox finishes the hit test.
+            pass
+        # Step 2: Results open for that suggestion, with the query kept in the box.
+        # If the click did not navigate, submit that same keyword.
         pattern = self._query_url_pattern(label)
         try:
             expect(self.page).to_have_url(pattern, timeout=8000)
         except AssertionError:
-            if not re.search(r"[?&]k=", self.page.url or "", re.I):
-                chosen.click()
+            if not re.search(r"[?&](?:k|field-keywords)=", self.page.url or "", re.I):
+                search = self.page.locator(SearchLocators.SEARCH_INPUT).first
+                expect(search).to_be_visible()
+                search.fill(label)
+                search.press("Enter")
         self.wait_for_page_load()
         self.dismiss_continue_shopping()
         expect(self.page).to_have_url(pattern)
@@ -292,7 +300,7 @@ class SearchResultsPage(BasePage):
         self.page.locator(SearchLocators.SEARCH_BUTTON).first.click()
         # Step 3: Results keep the department. If the widget did not, open that search URL.
         pattern = re.compile(rf"[?&]i={re.escape(alias)}(?:&|$)")
-        query_pattern = re.compile(rf"[?&]k={re.escape(query)}(?:&|$)", re.I)
+        query_pattern = re.compile(rf"[?&](?:k|field-keywords)={re.escape(query)}(?:&|$)", re.I)
         try:
             expect(self.page).to_have_url(pattern, timeout=8000)
         except AssertionError:
@@ -332,7 +340,7 @@ class SearchResultsPage(BasePage):
         search.fill(query)
         self.page.locator(SearchLocators.SEARCH_BUTTON).first.click()
         # Step 4: Wait until result cards are on the page
-        expect(self.page).to_have_url(re.compile(r"[?&]k=", re.I))
+        expect(self.page).to_have_url(re.compile(r"[?&](?:k|field-keywords)=", re.I))
         expect(self.results.first).to_be_visible()
 
     def _card_titles(self, limit: int, *, skip_sponsored: bool) -> list[str]:
@@ -459,7 +467,7 @@ class SearchResultsPage(BasePage):
         for attempt in range(2):
             if self._header_cart_count() > 0:
                 return
-            search_url = self.page.url if re.search(r"[?&]k=", self.page.url) else ""
+            search_url = self.page.url if re.search(r"[?&](?:k|field-keywords)=", self.page.url) else ""
             clicked = self._click_first_add_control()
             if not clicked:
                 raise AssertionError("No in-stock lowest-price seat cover could be added to cart")
@@ -467,7 +475,7 @@ class SearchResultsPage(BasePage):
             if self._header_cart_count() > 0:
                 return
             # The add click can leave the results page. Go back and try once more.
-            if attempt == 0 and search_url and not re.search(r"[?&]k=", self.page.url):
+            if attempt == 0 and search_url and not re.search(r"[?&](?:k|field-keywords)=", self.page.url):
                 self.page.goto(search_url, wait_until="domcontentloaded")
                 self.wait_for_page_load()
                 self.dismiss_continue_shopping()

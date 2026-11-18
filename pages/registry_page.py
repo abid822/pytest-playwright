@@ -45,7 +45,7 @@ class RegistryPage(BasePage):
         expect(self.page).to_have_url(re.compile(r"/registries/?($|\?)", re.I))
         if self._page_unavailable():
             pytest.skip("Amazon returned an error page for Registry")
-        expect(self.page).to_have_title(re.compile(r"Registry", re.I))
+        self.expect_title(re.compile(r"Registry", re.I))
 
     def open_baby_registry(self) -> None:
         # Step 1: Open Baby Registry from the landing page

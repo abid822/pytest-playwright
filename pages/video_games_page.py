@@ -43,7 +43,7 @@ class VideoGamesPage(BasePage):
             self.dismiss_continue_shopping()
         # Step 2: The Video Games store is showing, not a bot checkpoint
         expect(self.page).to_have_url(re.compile(r"node=468642"))
-        expect(self.page).to_have_title(re.compile(r"Video Games", re.I))
+        self.expect_title(re.compile(r"Video Games", re.I))
         expect(self._video_games_heading().first).to_be_visible()
 
     def _category_link(self, name: str):
@@ -105,7 +105,7 @@ class VideoGamesPage(BasePage):
             self.wait_for_page_load()
             self.dismiss_continue_shopping()
         expect(self.page).to_have_url(re.compile(rf"node={node}(?:&|$)"))
-        expect(self.page).to_have_title(re.compile(re.escape(name), re.I))
+        self.expect_title(re.compile(re.escape(name), re.I))
         expect(self._category_heading(name).first).to_be_visible()
 
     def expect_priced_product(self) -> None:

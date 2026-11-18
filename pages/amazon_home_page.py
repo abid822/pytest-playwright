@@ -43,7 +43,7 @@ class AmazonHomePage(BasePage):
             self.dismiss_continue_shopping()
         # Step 2: The Home store is showing, not a bot checkpoint
         expect(self.page).to_have_url(re.compile(r"node=1055398"))
-        expect(self.page).to_have_title(re.compile(r"Amazon Home", re.I))
+        self.expect_title(re.compile(r"Amazon Home", re.I))
         expect(self._home_heading().first).to_be_visible()
         expect(
             self.page.get_by_role(
@@ -78,24 +78,15 @@ class AmazonHomePage(BasePage):
         assert match, f"{name} category link has no node"
         node = match.group(1)
         link.click()
-        # Step 2: If the click does not leave the landing page, follow the href
+        # Step 2: Follow the href when the click stays put or returns to the home page.
+        pattern = re.compile(rf"node={node}(?:&|$)")
+        self.expect_url_or_follow(pattern, href)
         try:
-            expect(self.page).to_have_url(
-                re.compile(rf"node={node}(?:&|$)"), timeout=8000
-            )
+            self.expect_named_heading(name)
         except AssertionError:
-            if href.startswith("/"):
-                href = "https://www.amazon.com" + href
-            assert href, f"{name} category link has no href"
-            self.page.goto(href, wait_until="domcontentloaded")
-        self.wait_for_page_load()
-        self.dismiss_continue_shopping()
-        expect(self.page).to_have_url(re.compile(rf"node={node}(?:&|$)"))
-        expect(
-            self.page.get_by_role(
-                "heading", name=re.compile(rf"^{re.escape(name)}$", re.I)
-            ).first
-        ).to_be_visible()
+            self._open_href(href)
+            self.expect_url_or_follow(pattern, href)
+            self.expect_named_heading(name)
 
     def expect_priced_product(self) -> None:
         # A product card on the category page shows a dollar price.

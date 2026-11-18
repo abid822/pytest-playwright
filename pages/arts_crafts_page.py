@@ -42,7 +42,7 @@ class ArtsCraftsPage(BasePage):
         # Step 2: The Arts, Crafts & Sewing store is showing, not a bot checkpoint.
         # The document title says "Arts, Crafts & Sewing".
         expect(self.page).to_have_url(re.compile(r"node=2617941011"))
-        expect(self.page).to_have_title(re.compile(r"Arts, Crafts & Sewing", re.I))
+        self.expect_title(re.compile(r"Arts, Crafts & Sewing", re.I))
         expect(self.subnav).to_be_visible()
 
     def _category_link(self, name: str):
@@ -104,7 +104,7 @@ class ArtsCraftsPage(BasePage):
             self.wait_for_page_load()
             self.dismiss_continue_shopping()
         expect(self.page).to_have_url(re.compile(rf"node={node}(?:&|$)"))
-        expect(self.page).to_have_title(re.compile(re.escape(name), re.I))
+        self.expect_title(re.compile(re.escape(name), re.I))
         expect(self._category_heading(name).first).to_be_visible()
 
     def expect_priced_product(self) -> None:

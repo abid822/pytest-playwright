@@ -44,7 +44,7 @@ class HaulPage(BasePage):
             self.dismiss_continue_shopping()
         # Step 2: Amazon Haul is showing, not a bot checkpoint.
         expect(self.page).to_have_url(re.compile(r"/haul/store"))
-        expect(self.page).to_have_title(re.compile(r"Amazon Haul", re.I))
+        self.expect_title(re.compile(r"Amazon Haul", re.I))
         expect(self.subnav).to_be_visible()
 
     def _category_link(self, name: str):
@@ -94,10 +94,10 @@ class HaulPage(BasePage):
             self.dismiss_continue_shopping()
         expect(self.page).to_have_url(pattern)
         expect(self.page).to_have_url(
-            re.compile(rf"[?&]k=[^&]*{re.escape(name)}", re.I)
+            re.compile(rf"[?&](?:k|field-keywords)=[^&]*{re.escape(name)}", re.I)
         )
-        expect(self.page).to_have_title(re.compile(r"Amazon Haul", re.I))
-        expect(self.page).to_have_title(re.compile(re.escape(name), re.I))
+        self.expect_title(re.compile(r"Amazon Haul", re.I))
+        self.expect_title(re.compile(re.escape(name), re.I))
         expect(self.results.first).to_be_visible()
 
     def expect_priced_product(self) -> None:

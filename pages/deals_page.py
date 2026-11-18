@@ -27,7 +27,7 @@ class DealsPage(BasePage):
         # Step 2: The deals page is showing, not a bot checkpoint
         self.dismiss_continue_shopping()
         expect(self.page).to_have_url(re.compile(r"/deals", re.I))
-        expect(self.page).to_have_title(re.compile(r"Today's Deals", re.I))
+        self.expect_title(re.compile(r"Today's Deals", re.I))
 
     def _bubble(self, suffix: str):
         # Desktop uses filter-bubble-*. Mobile web uses bubble-*.

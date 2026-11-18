@@ -56,17 +56,8 @@ class BestSellersPage(BasePage):
         href = link.get_attribute("href") or ""
         link.scroll_into_view_if_needed()
         link.click()
-        # Step 2: If the click does not leave the landing page, follow the href
-        try:
-            expect(self.page).to_have_url(re.compile(r"/zgbs/"), timeout=8000)
-        except AssertionError:
-            if href.startswith("/"):
-                href = "https://www.amazon.com" + href
-            assert href, f"{name} department link has no href"
-            self.page.goto(href, wait_until="domcontentloaded")
-        self.wait_for_page_load()
-        self.dismiss_continue_shopping()
-        expect(self.page).to_have_url(re.compile(r"/zgbs/"))
+        # Step 2: Follow the href when the click stays put or returns to the home page.
+        self.expect_url_or_follow(re.compile(r"/zgbs/"), href)
         expect(
             self.page.get_by_role(
                 "heading",

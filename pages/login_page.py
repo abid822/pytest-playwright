@@ -1,5 +1,6 @@
 import re
 
+import pytest
 from playwright.sync_api import Page, expect
 
 from locators.login_locators import LoginLocators
@@ -31,8 +32,9 @@ class LoginPage(HomePage):
         # Invalid email / auth error banner
         self.error = page.locator(LoginLocators.INVALID_EMAIL_ALERT)
         self.agreement = page.get_by_text(re.compile(r"By continuing", re.I))
-        self.need_help = page.get_by_role("button", name=re.compile(r"Need help", re.I)).or_(
-            page.get_by_text(re.compile(r"Need help", re.I))
+        # "Need help?" is an expander link or a span, not always a button.
+        self.need_help = page.locator("a, button, span").filter(
+            has_text=re.compile(r"^\s*Need help\??\s*$", re.I)
         )
         self.buying_for_work = page.get_by_role(
             "link", name=re.compile(r"Buying for work|Create a free business account", re.I)
@@ -80,9 +82,77 @@ class LoginPage(HomePage):
         self.dismiss_continue_shopping()
         expect(self.email).to_be_visible()
 
+    def email_field(self):
+        # The visible email box. A hidden duplicate can sit earlier in the DOM.
+        field = self.email
+        for i in range(field.count()):
+            item = field.nth(i)
+            if item.is_visible():
+                return item
+        return field.first
+
+    def defocus_email(self) -> None:
+        # Autofocus draws a blue ring that is not part of the pixel baseline.
+        field = self.email_field()
+        expect(field).to_be_visible()
+        field.evaluate(
+            """el => {
+              el.blur();
+              const nodes = [el, el.parentElement].filter(Boolean);
+              for (const node of nodes) {
+                node.style.outline = 'none';
+                node.style.boxShadow = 'none';
+              }
+              if (document.activeElement && document.activeElement.blur) {
+                document.activeElement.blur();
+              }
+            }"""
+        )
+
+    def _challenge_in_frame(self, frame) -> bool:
+        # Image puzzle Amazon shows after many fake sign-ins.
+        heading = frame.get_by_role(
+            "heading", name=re.compile(r"solve this puzzle", re.I)
+        )
+        if heading.count() and heading.first.is_visible():
+            return True
+        puzzle = frame.get_by_role(
+            "button", name=re.compile(r"get an audio puzzle|get a new puzzle", re.I)
+        )
+        return puzzle.count() > 0 and puzzle.first.is_visible()
+
+    def skip_if_bot_challenge(self) -> None:
+        # The puzzle cannot be solved here. Skip instead of failing the sign-in check.
+        for frame in self.page.frames:
+            try:
+                if self._challenge_in_frame(frame):
+                    pytest.skip("Amazon bot challenge shown")
+            except pytest.skip.Exception:
+                raise
+            except Exception:
+                continue
+
+    def _settle_after_submit(self) -> None:
+        # The checkpoint page often arrives after Continue, not before it.
+        try:
+            self.page.wait_for_load_state("domcontentloaded", timeout=10000)
+        except Exception:
+            pass
+        self.dismiss_continue_shopping()
+        self.skip_if_bot_challenge()
+
+    def _expect_login_step(self) -> None:
+        step = self.password.or_(self.error).or_(self.new_account)
+        try:
+            expect(step.first).to_be_visible()
+        except AssertionError:
+            self._settle_after_submit()
+            expect(step.first).to_be_visible()
+        self.skip_if_bot_challenge()
+
     def submit_email(self, email: str) -> None:
         # Step 1: Enter email / phone
-        self.email.fill(email)
+        self.email_field().fill(email)
         # Step 2: Click Continue
         self.continue_btn.click()
 
@@ -118,13 +188,14 @@ class LoginPage(HomePage):
         self.submit_email(username)
         # Step 2: Pass the human checkbox when Amazon shows it.
         # Continue shopping sends us back to the home page, so sign in once more.
-        self.dismiss_continue_shopping()
+        self._settle_after_submit()
         if not self._login_step_visible() and self._back_on_home():
             self.open_sign_in()
             self.submit_email(username)
-            self.dismiss_continue_shopping()
-        # Step 3: Error, create-account prompt, or a password field
-        expect(self.password.or_(self.error).or_(self.new_account).first).to_be_visible()
+            self._settle_after_submit()
+        # Step 3: Error, create-account prompt, or a password field.
+        # A checkpoint that lands during this wait is skipped.
+        self._expect_login_step()
         password_box = self._visible_password()
         if password_box is None:
             return
@@ -135,32 +206,57 @@ class LoginPage(HomePage):
             self.sign_in_submit.click()
         else:
             password_box.press("Enter")
-        self.dismiss_continue_shopping()
+        self._settle_after_submit()
 
     def expect_invalid_email_error(self) -> None:
-        # Error banner should mention invalid / incorrect email
-        expect(self.error).to_be_visible()
+        # Error banner should mention invalid / incorrect email.
+        # A checkpoint or puzzle in its place is a block, not a missing banner.
+        try:
+            expect(self.error).to_be_visible()
+        except AssertionError:
+            self._settle_after_submit()
+            expect(self.error).to_be_visible()
+        self.skip_if_bot_challenge()
         expect(self.error).to_contain_text(re.compile(r"invalid|incorrect|e-?mail", re.I))
 
     def expect_login_rejected(self, username: str) -> None:
+        # A puzzle or checkpoint after submit is a block, not a wrong assertion.
+        self.skip_if_bot_challenge()
         # A submitted password must be rejected. Do not click "create an account".
         if self.password_submitted:
-            expect(self.error).to_be_visible()
+            try:
+                expect(self.error).to_be_visible()
+            except AssertionError:
+                self._settle_after_submit()
+                expect(self.error).to_be_visible()
             expect(self.error).to_contain_text(
                 re.compile(r"invalid|incorrect|password|cannot find|problem|account", re.I)
             )
             return
         # Unknown email: the create-account page must show this username.
-        expect(self.new_account.first).to_be_visible()
+        try:
+            expect(self.new_account.first).to_be_visible()
+        except AssertionError:
+            self._settle_after_submit()
+            expect(self.new_account.first).to_be_visible()
         expect(self.page.get_by_text(username, exact=False).first).to_be_visible()
         expect(
             self.page.get_by_role("button", name=re.compile(r"Proceed to create an account", re.I))
         ).to_be_visible()
 
     def expect_sign_in_helpers(self) -> None:
-        # Legal text and helper links on the sign-in form
-        expect(self.agreement).to_be_visible()
-        expect(self.need_help.first).to_be_visible()
+        # Legal text and helper links on the sign-in form.
+        self.skip_if_bot_challenge()
+        expect(self.agreement.first).to_be_visible()
+        self.agreement.first.scroll_into_view_if_needed()
+        help_control = self.need_help.locator("visible=true")
+        try:
+            expect(help_control.first).to_be_visible()
+        except AssertionError:
+            self._settle_after_submit()
+            if help_control.count():
+                help_control.first.scroll_into_view_if_needed()
+            expect(help_control.first).to_be_visible()
         expect(self.buying_for_work.first).to_be_visible()
 
     def login_form(self):

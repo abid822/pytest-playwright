@@ -104,7 +104,7 @@ class FindAGiftPage(BasePage):
         self.dismiss_continue_shopping()
         # Step 2: Birthday gifts are listed
         expect(self.page).to_have_url(re.compile(rf"node={node.group(1)}"))
-        expect(self.page).to_have_title(re.compile(r"Birthday", re.I))
+        self.expect_title(re.compile(r"Birthday", re.I))
         heading = self.page.get_by_role(
             "heading", name=re.compile(r"^Birthdays$", re.I)
         )

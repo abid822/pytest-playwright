@@ -43,7 +43,7 @@ class PetSuppliesPage(BasePage):
             self.dismiss_continue_shopping()
         # Step 2: The Pet Supplies store is showing, not a bot checkpoint
         expect(self.page).to_have_url(re.compile(r"node=2619533011"))
-        expect(self.page).to_have_title(re.compile(r"Pet Supplies", re.I))
+        self.expect_title(re.compile(r"Pet Supplies", re.I))
         expect(self._pet_supplies_heading().first).to_be_visible()
 
     def _category_link(self, name: str):
@@ -105,7 +105,7 @@ class PetSuppliesPage(BasePage):
             self.wait_for_page_load()
             self.dismiss_continue_shopping()
         expect(self.page).to_have_url(re.compile(rf"node={node}(?:&|$)"))
-        expect(self.page).to_have_title(re.compile(re.escape(name), re.I))
+        self.expect_title(re.compile(re.escape(name), re.I))
         expect(self._category_heading(name).first).to_be_visible()
 
     def expect_priced_product(self) -> None:

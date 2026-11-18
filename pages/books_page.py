@@ -49,7 +49,7 @@ class BooksPage(BasePage):
             self.dismiss_continue_shopping()
         # Step 2: The Books store is showing, not a bot checkpoint
         expect(self.page).to_have_url(re.compile(r"/amz-books/store", re.I))
-        expect(self.page).to_have_title(re.compile(r"Books", re.I))
+        self.expect_title(re.compile(r"Books", re.I))
         expect(self._books_heading().first).to_be_visible()
 
     def expect_shop_sections(self, names: list[str] | None = None) -> None:
@@ -95,7 +95,7 @@ class BooksPage(BasePage):
         self.dismiss_continue_shopping()
         # Step 2: That category is showing
         expect(self.page).to_have_url(re.compile(rf"node={node.group(1)}(?:&|$)"))
-        expect(self.page).to_have_title(re.compile(re.escape(name), re.I))
+        self.expect_title(re.compile(re.escape(name), re.I))
         expect(
             self.page.get_by_role(
                 "heading", name=re.compile(re.escape(name), re.I)

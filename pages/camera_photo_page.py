@@ -44,7 +44,7 @@ class CameraPhotoPage(BasePage):
         # Step 2: The Camera & Photo store is showing, not a bot checkpoint.
         # The document title says "Camera & Photo".
         expect(self.page).to_have_url(re.compile(r"node=502394"))
-        expect(self.page).to_have_title(re.compile(r"Camera & Photo", re.I))
+        self.expect_title(re.compile(r"Camera & Photo", re.I))
         expect(self._camera_photo_heading().first).to_be_visible()
 
     def _category_link(self, name: str):
@@ -106,7 +106,7 @@ class CameraPhotoPage(BasePage):
             self.wait_for_page_load()
             self.dismiss_continue_shopping()
         expect(self.page).to_have_url(re.compile(rf"node={node}(?:&|$)"))
-        expect(self.page).to_have_title(re.compile(re.escape(name), re.I))
+        self.expect_title(re.compile(re.escape(name), re.I))
         expect(self._category_heading(name).first).to_be_visible()
 
     def expect_priced_product(self) -> None:
