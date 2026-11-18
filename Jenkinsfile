@@ -144,5 +144,20 @@ def runSuite() {
 
 def publishBrowser(String browser) {
   junit allowEmptyResults: true, testResults: "reports/junit-${browser}.xml"
-  archiveArtifacts artifacts: 'reports/**,test-results/traces/**', allowEmptyArchive: true
+  // Parallel stages share one build archive. Copy into a per-browser directory
+  // so the HTML report, screenshots, and traces do not overwrite each other.
+  sh """
+    set -eu
+    dest="artifacts/${browser}"
+    rm -rf "\${dest}"
+    mkdir -p "\${dest}"
+    if [ -d reports ]; then
+      cp -a reports/. "\${dest}/"
+    fi
+    if [ -d test-results/traces ] && [ -n "\$(ls -A test-results/traces 2>/dev/null || true)" ]; then
+      mkdir -p "\${dest}/traces"
+      cp -a test-results/traces/. "\${dest}/traces/"
+    fi
+  """
+  archiveArtifacts artifacts: "artifacts/${browser}/**", allowEmptyArchive: true
 }
