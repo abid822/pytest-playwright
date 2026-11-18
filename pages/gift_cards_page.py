@@ -22,8 +22,9 @@ class GiftCardsPage(BasePage):
         self.product_title = page.locator(GiftCardsLocators.PRODUCT_TITLE)
 
     def _shop_heading(self):
-        return self.page.get_by_role(
-            "heading", name=re.compile(r"^The Gift Card Shop$", re.I)
+        pattern = re.compile(r"^The Gift Card Shop$", re.I)
+        return self.page.get_by_role("heading", name=pattern).or_(
+            self.page.locator("h1, h2, h3, span").filter(has_text=pattern)
         )
 
     def _shop_ready(self) -> bool:

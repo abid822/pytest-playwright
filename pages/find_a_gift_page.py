@@ -32,8 +32,9 @@ class FindAGiftPage(BasePage):
     """Amazon Find a Gift: shop sections, then a priced birthday gift."""
 
     def _gift_heading(self):
-        return self.page.get_by_role(
-            "heading", name=re.compile(r"^Gift Shop$", re.I)
+        pattern = re.compile(r"^Gift Shop$", re.I)
+        return self.page.get_by_role("heading", name=pattern).or_(
+            self.page.locator("h1, h2, h3, span").filter(has_text=pattern)
         )
 
     def _gift_ready(self) -> bool:

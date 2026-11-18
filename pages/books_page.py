@@ -27,8 +27,9 @@ class BooksPage(BasePage):
     """Amazon Books: store sections, then a priced Literature & Fiction book."""
 
     def _books_heading(self):
-        return self.page.get_by_role(
-            "heading", name=re.compile(r"^Explore top categories$", re.I)
+        pattern = re.compile(r"^Explore top categories$", re.I)
+        return self.page.get_by_role("heading", name=pattern).or_(
+            self.page.locator("h1, h2, h3, span").filter(has_text=pattern)
         )
 
     def _books_ready(self) -> bool:
@@ -48,7 +49,8 @@ class BooksPage(BasePage):
             self.wait_for_page_load()
             self.dismiss_continue_shopping()
         # Step 2: The Books store is showing, not a bot checkpoint
-        expect(self.page).to_have_url(re.compile(r"/amz-books/store", re.I))
+        # Amazon keeps the browse node, or redirects into the newer books store.
+        expect(self.page).to_have_url(re.compile(r"/amz-books/store|node=283155", re.I))
         self.expect_title(re.compile(r"Books", re.I))
         expect(self._books_heading().first).to_be_visible()
 
