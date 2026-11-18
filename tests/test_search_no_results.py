@@ -10,8 +10,8 @@ NO_MATCH_QUERY = "zzzzqqqnonexistentitem987654"
 def test_search_with_no_matches_shows_an_empty_state(
     search_results_page: SearchResultsPage,
 ):
-    """Searches for a query that matches nothing and checks the empty-state message."""
+    """Searches for a query that matches nothing and checks that no real product is listed."""
     # Step 1: Search for a query that should not match a product
     search_results_page.search_with_no_results(NO_MATCH_QUERY)
-    # Step 2: The empty-state message is shown and no product cards are listed
+    # Step 2: Empty-state message, or only sponsored slots. No real product cards.
     search_results_page.expect_no_results()
