@@ -161,6 +161,18 @@ Each job uploads `reports/` as `reports-chromium`, `reports-firefox`, or `report
 
 When a job fails, it also uploads `test-results/traces` as `traces-chromium`, `traces-firefox`, or `traces-webkit`.
 
+## Jenkins
+
+GitHub Actions stays the main CI. To run the same suite in Jenkins on a Mac, from the repository root:
+
+```bash
+docker compose up -d
+```
+
+Open http://localhost:8080 and log in. The user is `admin` and the password is `admin` (change me, or set `JENKINS_ADMIN_ID` and `JENKINS_ADMIN_PASSWORD`). Open the `pytest-playwright` job and click Build.
+
+The image installs Pipeline, Docker Pipeline, Git, JUnit, Timestamper, Configuration as Code, and Job DSL. The job uses the `Jenkinsfile` on `main`.
+
 ## Reports
 
 `reports/` is gitignored. A run writes:
