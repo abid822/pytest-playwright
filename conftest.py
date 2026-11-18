@@ -43,6 +43,7 @@ from pages.video_games_page import VideoGamesPage
 from pages.pet_supplies_page import PetSuppliesPage
 from pages.product_page import ProductPage
 from pages.musical_instruments_page import MusicalInstrumentsPage
+from pages.office_products_page import OfficeProductsPage
 from utils.friendly_report import (
     ReportCollector,
     TestRecord,
@@ -320,6 +321,11 @@ def registry_page(sb_page) -> RegistryPage:
 @pytest.fixture
 def musical_instruments_page(sb_page) -> MusicalInstrumentsPage:
     return MusicalInstrumentsPage(sb_page)
+
+
+@pytest.fixture
+def office_products_page(sb_page) -> OfficeProductsPage:
+    return OfficeProductsPage(sb_page)
 
 
 # Workers record results on the pytest report. The controller (or a run
