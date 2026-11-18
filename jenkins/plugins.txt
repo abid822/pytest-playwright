@@ -1,0 +1,7 @@
+git
+workflow-aggregator
+docker-workflow
+junit
+timestamper
+configuration-as-code
+job-dsl

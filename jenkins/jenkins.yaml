@@ -1,0 +1,34 @@
+jenkins:
+  systemMessage: "pytest-playwright"
+  numExecutors: 4
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+        - id: "${JENKINS_ADMIN_ID}"
+          password: "${JENKINS_ADMIN_PASSWORD}"
+  authorizationStrategy:
+    loggedInUsersCanDoAnything:
+      allowAnonymousRead: false
+
+jobs:
+  - script: |
+      pipelineJob('pytest-playwright') {
+        description('Playwright pytest suite. Uses the Jenkinsfile on main.')
+        parameters {
+          choiceParam('BROWSER', ['all', 'chromium', 'firefox', 'webkit'], 'Browser to test. all runs chromium, firefox, and webkit in parallel.')
+        }
+        definition {
+          cpsScm {
+            scm {
+              git {
+                remote {
+                  url('https://github.com/abid822/pytest-playwright')
+                }
+                branches('*/main')
+              }
+            }
+            scriptPath('Jenkinsfile')
+          }
+        }
+      }

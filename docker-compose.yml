@@ -1,0 +1,21 @@
+# Local Jenkins for this repo. `docker compose up -d` from the repository root.
+# Default login is admin / admin. Change it:
+#   JENKINS_ADMIN_ID=you JENKINS_ADMIN_PASSWORD=secret docker compose up -d
+# The image is built for the machine you are on, including Apple Silicon.
+
+services:
+  jenkins:
+    build: ./jenkins
+    privileged: true
+    ports:
+      - "8080:8080"
+    environment:
+      JENKINS_ADMIN_ID: ${JENKINS_ADMIN_ID:-admin}
+      JENKINS_ADMIN_PASSWORD: ${JENKINS_ADMIN_PASSWORD:-admin}
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
+
+volumes:
+  jenkins_home:
