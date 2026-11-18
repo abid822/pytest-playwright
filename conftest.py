@@ -23,6 +23,7 @@ from pages.bestsellers_page import BestSellersPage
 from pages.books_page import BooksPage
 from pages.camera_photo_page import CameraPhotoPage
 from pages.computers_page import ComputersPage
+from pages.haul_page import HaulPage
 from pages.customer_service_page import CustomerServicePage
 from pages.deals_page import DealsPage
 from pages.electronics_page import ElectronicsPage
@@ -256,6 +257,11 @@ def books_page(sb_page) -> BooksPage:
 @pytest.fixture
 def camera_photo_page(sb_page) -> CameraPhotoPage:
     return CameraPhotoPage(sb_page)
+
+
+@pytest.fixture
+def haul_page(sb_page) -> HaulPage:
+    return HaulPage(sb_page)
 
 
 @pytest.fixture
