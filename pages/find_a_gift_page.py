@@ -50,11 +50,13 @@ class FindAGiftPage(BasePage):
         # The first response is sometimes a shell with no heading.
         self.open(FindAGiftLocators.URL)
         if not self._gift_ready():
-            self.page.goto(FindAGiftLocators.URL, wait_until="domcontentloaded")
-            self.wait_for_page_load()
-            self.dismiss_continue_shopping()
-        # Step 2: The Gift Shop is showing, not a bot checkpoint
-        expect(self.page).to_have_url(re.compile(r"node=206764924011"))
+            self._open_href(FindAGiftLocators.URL)
+        # Step 2: The Gift Shop is showing, not a bot checkpoint.
+        # Continue shopping can send the browser back to the home page.
+        self.expect_url_or_follow(
+            re.compile(r"node=206764924011"),
+            FindAGiftLocators.URL,
+        )
         expect(self._gift_heading().first).to_be_visible()
 
     def expect_shop_sections(self, names: list[str] | None = None) -> None:

@@ -1,5 +1,6 @@
 import re
 
+import pytest
 from playwright.sync_api import Page, expect
 
 from locators.home_locators import SearchLocators
@@ -50,6 +51,8 @@ class ProductPage(BasePage):
                 self.page.goto(href, wait_until="domcontentloaded")
                 self.wait_for_page_load()
                 self.dismiss_continue_shopping()
+            if "/ap/signin" in (self.page.url or ""):
+                pytest.skip("Amazon asked for sign-in instead of the product")
             expect(self.page).to_have_url(re.compile(r"/dp/"))
             return
         raise AssertionError("No organic search result could be opened")
