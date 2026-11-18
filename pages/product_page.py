@@ -26,7 +26,12 @@ class ProductPage(BasePage):
         # Step 1: Results are on screen. A bot checkpoint skips the test.
         self.wait_for_page_load()
         self.dismiss_continue_shopping()
-        expect(self.results.first).to_be_visible()
+        try:
+            expect(self.results.first).to_be_visible()
+        except AssertionError:
+            if self.results.count() == 0:
+                pytest.skip("Amazon did not render search results")
+            raise
         # Step 2: Open the first organic product. Sponsored cards are skipped.
         for i in range(min(self.results.count(), 12)):
             card = self.results.nth(i)
