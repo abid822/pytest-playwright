@@ -45,7 +45,7 @@ class GiftCardsPage(BasePage):
             self.dismiss_continue_shopping()
         # Step 2: The shop is showing, not a bot checkpoint
         expect(self.page).to_have_url(re.compile(r"/gift-cards", re.I))
-        expect(self._shop_heading()).to_be_visible()
+        expect(self._shop_heading().first).to_be_visible()
 
     def expect_shop_sections(self, names: list[str] | None = None) -> None:
         # Each shop-by heading is on the landing page.
