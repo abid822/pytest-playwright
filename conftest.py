@@ -37,6 +37,7 @@ from pages.registry_page import RegistryPage
 from pages.login_page import LoginPage
 from pages.search_results_page import SearchResultsPage
 from pages.sell_page import SellPage
+from pages.smart_home_page import SmartHomePage
 from pages.software_page import SoftwarePage
 from pages.sports_page import SportsPage
 from pages.tools_page import ToolsPage
@@ -332,6 +333,11 @@ def office_products_page(sb_page) -> OfficeProductsPage:
 @pytest.fixture
 def clothing_page(sb_page) -> ClothingPage:
     return ClothingPage(sb_page)
+
+
+@pytest.fixture
+def smart_home_page(sb_page) -> SmartHomePage:
+    return SmartHomePage(sb_page)
 
 
 # Workers record results on the pytest report. The controller (or a run
