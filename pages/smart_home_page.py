@@ -1,0 +1,65 @@
+import re
+
+from playwright.sync_api import Page, expect
+
+from locators.smart_home_locators import SmartHomeLocators
+from pages.base_page import BasePage
+
+# Departments that stay in the Smart Home strip. Seasonal tiles rotate.
+CORE_CATEGORIES = [
+    "Lighting",
+    "Plugs",
+    "Cameras",
+    "Home Entertainment",
+]
+
+
+class SmartHomePage(BasePage):
+    """Amazon Smart Home: store categories, then a priced camera."""
+
+    def __init__(self, page: Page) -> None:
+        super().__init__(page)
+        self.subnav = page.locator(SmartHomeLocators.SUBNAV)
+
+    def _smart_home_ready(self) -> bool:
+        # The store title says Smart Home. The strip identifies the department.
+        try:
+            title = self.page.title() or ""
+            if not re.search(r"Smart Home", title, re.I):
+                return False
+            return self.subnav.count() > 0 and self.subnav.is_visible()
+        except Exception:
+            return False
+
+    def open_smart_home(self) -> None:
+        # Step 1: Open the Smart Home store.
+        # The first response is sometimes a shell with no strip.
+        self.open(SmartHomeLocators.URL)
+        for _ in range(2):
+            if self._smart_home_ready():
+                break
+            self.page.goto(SmartHomeLocators.URL, wait_until="domcontentloaded")
+            self.wait_for_page_load()
+            self.dismiss_continue_shopping()
+        # Step 2: The Smart Home store is showing, not a bot checkpoint.
+        # The document title says "Smart Home".
+        expect(self.page).to_have_url(re.compile(r"node=6563140011"))
+        self.expect_title(re.compile(r"Smart Home", re.I))
+        expect(self.subnav).to_be_visible()
+
+    def _category_link(self, name: str):
+        # Link text includes surrounding whitespace. Match the strip label.
+        return self.page.locator(SmartHomeLocators.SUBNAV_LINK).filter(
+            has_text=re.compile(rf"^\s*{re.escape(name)}\s*$", re.I)
+        ).first
+
+    def expect_core_categories(self, names: list[str] | None = None) -> None:
+        # Step 1: The store strip is on screen
+        expect(self.subnav).to_be_visible()
+        # Step 2: Each core category is listed
+        missing = []
+        for name in names or CORE_CATEGORIES:
+            link = self._category_link(name)
+            if link.count() == 0:
+                missing.append(name)
+        assert not missing, f"Missing Smart Home categories: {missing}"
