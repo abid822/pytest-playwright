@@ -22,6 +22,7 @@ from pages.beauty_page import BeautyPage
 from pages.bestsellers_page import BestSellersPage
 from pages.books_page import BooksPage
 from pages.camera_photo_page import CameraPhotoPage
+from pages.clothing_page import ClothingPage
 from pages.computers_page import ComputersPage
 from pages.haul_page import HaulPage
 from pages.customer_service_page import CustomerServicePage
@@ -326,6 +327,11 @@ def musical_instruments_page(sb_page) -> MusicalInstrumentsPage:
 @pytest.fixture
 def office_products_page(sb_page) -> OfficeProductsPage:
     return OfficeProductsPage(sb_page)
+
+
+@pytest.fixture
+def clothing_page(sb_page) -> ClothingPage:
+    return ClothingPage(sb_page)
 
 
 # Workers record results on the pytest report. The controller (or a run
