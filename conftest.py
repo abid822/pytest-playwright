@@ -47,6 +47,7 @@ from pages.pet_supplies_page import PetSuppliesPage
 from pages.product_page import ProductPage
 from pages.musical_instruments_page import MusicalInstrumentsPage
 from pages.office_products_page import OfficeProductsPage
+from pages.movies_tv_page import MoviesTvPage
 from utils.friendly_report import (
     ReportCollector,
     TestRecord,
@@ -344,6 +345,11 @@ def smart_home_page(sb_page) -> SmartHomePage:
 @pytest.fixture
 def industrial_page(sb_page) -> IndustrialPage:
     return IndustrialPage(sb_page)
+
+
+@pytest.fixture
+def movies_tv_page(sb_page) -> MoviesTvPage:
+    return MoviesTvPage(sb_page)
 
 
 # Workers record results on the pytest report. The controller (or a run
