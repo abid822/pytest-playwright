@@ -6,6 +6,7 @@ from pages.movies_tv_page import MoviesTvPage
 @pytest.mark.desktop_only
 @pytest.mark.movies_tv
 def test_movies_tv_bluray_shows_a_price(movies_tv_page: MoviesTvPage):
+    """Opens Movies & TV, checks the store categories, and opens Blu-ray to see a price."""
     # Step 1: Open the Movies & TV store
     movies_tv_page.open_movies_tv()
     # Step 2: Core store categories are listed
