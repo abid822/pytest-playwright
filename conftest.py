@@ -25,6 +25,7 @@ from pages.camera_photo_page import CameraPhotoPage
 from pages.clothing_page import ClothingPage
 from pages.computers_page import ComputersPage
 from pages.haul_page import HaulPage
+from pages.industrial_page import IndustrialPage
 from pages.customer_service_page import CustomerServicePage
 from pages.deals_page import DealsPage
 from pages.electronics_page import ElectronicsPage
@@ -338,6 +339,11 @@ def clothing_page(sb_page) -> ClothingPage:
 @pytest.fixture
 def smart_home_page(sb_page) -> SmartHomePage:
     return SmartHomePage(sb_page)
+
+
+@pytest.fixture
+def industrial_page(sb_page) -> IndustrialPage:
+    return IndustrialPage(sb_page)
 
 
 # Workers record results on the pytest report. The controller (or a run
