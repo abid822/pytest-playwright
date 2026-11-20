@@ -182,6 +182,10 @@ STORIES: dict[str, dict[str, str]] = {
         "title": "Industrial & Scientific Food Service shows a price",
         "why": "Opens Industrial & Scientific, checks the store categories, and opens Food Service to see a price.",
     },
+    "test_movies_tv_bluray_shows_a_price": {
+        "title": "Movies & TV Blu-ray shows a price",
+        "why": "Opens Movies & TV, checks the store categories, and opens Blu-ray to see a price.",
+    },
     "test_search_result_shows_title_price_and_add_to_cart": {
         "title": "Product page shows a title, price, and Add to cart",
         "why": "Searches for batteries, opens the first result, and checks the title, price, and Add to cart.",
@@ -227,6 +231,7 @@ MARKER_LABELS = {
     "clothing": "Clothing, Shoes & Jewelry",
     "smart_home": "Smart Home",
     "industrial": "Industrial & Scientific",
+    "movies_tv": "Movies & TV",
     "ci_skip": "Skipped in CI",
     "chromium_only": "Chromium baseline",
     "desktop_only": "Desktop only",
