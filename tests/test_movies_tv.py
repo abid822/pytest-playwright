@@ -10,3 +10,7 @@ def test_movies_tv_bluray_shows_a_price(movies_tv_page: MoviesTvPage):
     movies_tv_page.open_movies_tv()
     # Step 2: Core store categories are listed
     movies_tv_page.expect_core_categories()
+    # Step 3: Open Blu-ray
+    movies_tv_page.open_category("Blu-ray")
+    # Step 4: A product on that page shows a price
+    movies_tv_page.expect_priced_product()
