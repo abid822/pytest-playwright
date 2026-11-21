@@ -186,6 +186,10 @@ STORIES: dict[str, dict[str, str]] = {
         "title": "Movies & TV Blu-ray shows a price",
         "why": "Opens Movies & TV, checks the store categories, and opens Blu-ray to see a price.",
     },
+    "test_toys_character_store_shows_a_price": {
+        "title": "Toys & Games Character store shows a price",
+        "why": "Opens Toys & Games, checks the store categories, and opens Shop Toys by Character to see a price.",
+    },
     "test_search_result_shows_title_price_and_add_to_cart": {
         "title": "Product page shows a title, price, and Add to cart",
         "why": "Searches for batteries, opens the first result, and checks the title, price, and Add to cart.",
@@ -232,6 +236,7 @@ MARKER_LABELS = {
     "smart_home": "Smart Home",
     "industrial": "Industrial & Scientific",
     "movies_tv": "Movies & TV",
+    "toys": "Toys & Games",
     "ci_skip": "Skipped in CI",
     "chromium_only": "Chromium baseline",
     "desktop_only": "Desktop only",
