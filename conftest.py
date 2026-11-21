@@ -42,6 +42,7 @@ from pages.smart_home_page import SmartHomePage
 from pages.software_page import SoftwarePage
 from pages.sports_page import SportsPage
 from pages.tools_page import ToolsPage
+from pages.toys_page import ToysPage
 from pages.video_games_page import VideoGamesPage
 from pages.pet_supplies_page import PetSuppliesPage
 from pages.product_page import ProductPage
@@ -210,6 +211,11 @@ def sports_page(sb_page) -> SportsPage:
 @pytest.fixture
 def tools_page(sb_page) -> ToolsPage:
     return ToolsPage(sb_page)
+
+
+@pytest.fixture
+def toys_page(sb_page) -> ToysPage:
+    return ToysPage(sb_page)
 
 
 @pytest.fixture
