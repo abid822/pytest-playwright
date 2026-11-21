@@ -23,6 +23,7 @@ from pages.bestsellers_page import BestSellersPage
 from pages.books_page import BooksPage
 from pages.camera_photo_page import CameraPhotoPage
 from pages.clothing_page import ClothingPage
+from pages.collectibles_page import CollectiblesPage
 from pages.computers_page import ComputersPage
 from pages.haul_page import HaulPage
 from pages.industrial_page import IndustrialPage
@@ -341,6 +342,11 @@ def office_products_page(sb_page) -> OfficeProductsPage:
 @pytest.fixture
 def clothing_page(sb_page) -> ClothingPage:
     return ClothingPage(sb_page)
+
+
+@pytest.fixture
+def collectibles_page(sb_page) -> CollectiblesPage:
+    return CollectiblesPage(sb_page)
 
 
 @pytest.fixture
