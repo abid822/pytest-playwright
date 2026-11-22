@@ -194,6 +194,10 @@ STORIES: dict[str, dict[str, str]] = {
         "title": "Collectibles & Fine Art Collectible Coins shows a price",
         "why": "Opens Collectibles & Fine Art, checks the store categories, and opens Collectible Coins to see a price.",
     },
+    "test_audible_deals_shows_a_price": {
+        "title": "Audible Audiobook Deals shows a price",
+        "why": "Opens Audible Books & Originals, checks the store categories, and opens Audiobook Deals to see a price.",
+    },
     "test_search_result_shows_title_price_and_add_to_cart": {
         "title": "Product page shows a title, price, and Add to cart",
         "why": "Searches for batteries, opens the first result, and checks the title, price, and Add to cart.",
@@ -242,6 +246,7 @@ MARKER_LABELS = {
     "movies_tv": "Movies & TV",
     "toys": "Toys & Games",
     "collectibles": "Collectibles & Fine Art",
+    "audible": "Audible",
     "ci_skip": "Skipped in CI",
     "chromium_only": "Chromium baseline",
     "desktop_only": "Desktop only",
