@@ -13,6 +13,16 @@ CORE_CATEGORIES = [
     "Categories",
 ]
 
+# The deals page title says "Audible Deals", not the strip label.
+_TITLE_PATTERNS = {
+    "Audiobook Deals": re.compile(r"Audible Deals", re.I),
+}
+
+# The deals heading matches the document title, not the strip label.
+_HEADING_PATTERNS = {
+    "Audiobook Deals": re.compile(r"^Audible Deals$", re.I),
+}
+
 
 class AudiblePage(BasePage):
     """Amazon Audible: store categories, then a priced Audiobook Deal."""
@@ -63,3 +73,64 @@ class AudiblePage(BasePage):
             if link.count() == 0:
                 missing.append(name)
         assert not missing, f"Missing Audible categories: {missing}"
+
+    def _title_pattern(self, name: str):
+        return _TITLE_PATTERNS.get(name, re.compile(re.escape(name), re.I))
+
+    def _category_heading(self, name: str):
+        pattern = _HEADING_PATTERNS.get(
+            name, re.compile(rf"^{re.escape(name)}$", re.I)
+        )
+        return self.page.get_by_role("heading", name=pattern)
+
+    def _category_ready(self, name: str) -> bool:
+        try:
+            title = self.page.title() or ""
+            if self._title_pattern(name).search(title):
+                return True
+            heading = self._category_heading(name)
+            return heading.count() > 0 and heading.first.is_visible()
+        except Exception:
+            return False
+
+    def open_category(self, name: str) -> None:
+        # Step 1: Open that category from the store strip
+        link = self._category_link(name)
+        expect(link).to_be_visible()
+        href = link.get_attribute("href") or ""
+        match = re.search(r"node=(\d+)", href)
+        assert match, f"{name} category link has no node"
+        node = match.group(1)
+        link.click()
+        # Step 2: If the click does not leave the landing page, follow the href
+        try:
+            expect(self.page).to_have_url(
+                re.compile(rf"node={node}(?:&|$)"), timeout=8000
+            )
+        except AssertionError:
+            if href.startswith("/"):
+                href = "https://www.amazon.com" + href
+            assert href, f"{name} category link has no href"
+            self.page.goto(href, wait_until="domcontentloaded")
+        self.wait_for_page_load()
+        self.dismiss_continue_shopping()
+        # The click sometimes lands on a shell: right node, empty title, no prices.
+        # A reload paints the category page. A second goto of the same href does not.
+        if not self._category_ready(name):
+            self.page.reload(wait_until="domcontentloaded")
+            self.wait_for_page_load()
+            self.dismiss_continue_shopping()
+        expect(self.page).to_have_url(re.compile(rf"node={node}(?:&|$)"))
+        self.expect_title(self._title_pattern(name))
+        heading = self._category_heading(name)
+        if heading.count() > 0:
+            expect(heading.first).to_be_visible()
+
+    def expect_priced_product(self) -> None:
+        # An audiobook card on the deals page shows a dollar price.
+        price = self.page.locator(AudibleLocators.PRODUCT_PRICE).first
+        expect(price).to_be_attached()
+        text = " ".join((price.text_content() or "").split())
+        assert re.search(r"\$\s*\d", text), (
+            f"Audible deal has no price: {text!r}"
+        )
