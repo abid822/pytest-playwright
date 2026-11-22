@@ -10,3 +10,7 @@ def test_audible_deals_shows_a_price(audible_page: AudiblePage):
     audible_page.open_audible()
     # Step 2: Core store categories are listed
     audible_page.expect_core_categories()
+    # Step 3: Open Audiobook Deals
+    audible_page.open_category("Audiobook Deals")
+    # Step 4: An audiobook on that page shows a price
+    audible_page.expect_priced_product()
