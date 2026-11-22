@@ -16,6 +16,7 @@ from config.settings import (
 from pages.amazon_home_page import AmazonHomePage
 from pages.appliances_page import AppliancesPage
 from pages.arts_crafts_page import ArtsCraftsPage
+from pages.audible_page import AudiblePage
 from pages.automotive_page import AutomotivePage
 from pages.baby_page import BabyPage
 from pages.beauty_page import BeautyPage
@@ -247,6 +248,11 @@ def appliances_page(sb_page) -> AppliancesPage:
 @pytest.fixture
 def arts_crafts_page(sb_page) -> ArtsCraftsPage:
     return ArtsCraftsPage(sb_page)
+
+
+@pytest.fixture
+def audible_page(sb_page) -> AudiblePage:
+    return AudiblePage(sb_page)
 
 
 @pytest.fixture
