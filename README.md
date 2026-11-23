@@ -88,6 +88,7 @@ Amazon is a live site. When the continue-shopping check shows an "I am human" ch
 | `tests/test_collectibles.py` | Opens Collectibles & Fine Art, checks Collectibles & Fine Art, Sports Collectibles, Entertainment Collectibles, and Collectible Coins, then opens Collectible Coins and checks that a product shows a price. Markers: `collectibles`, `desktop_only`. The store category strip is desktop-only. |
 | `tests/test_audible.py` | Opens Audible, checks Audible Membership, Audiobook Deals, Now Trending, and Categories, then opens Audiobook Deals and checks that an audiobook shows a price. Markers: `audible`, `desktop_only`. The store category strip is desktop-only. |
 | `tests/test_cell_phones.py` | Opens Cell Phones & Accessories, checks Cell Phones, Accessories, Cases, and Wearable Technology, then opens Cell Phones and checks that a product shows a price. Markers: `cell_phones`, `desktop_only`. The store category strip is desktop-only. |
+| `tests/test_apps.py` | Opens Apps & Games, checks Fire Tablet Apps, Fire TV Apps, and Games, then opens Fire Tablet Apps and checks that a product shows a price. Markers: `apps`, `desktop_only`. The store category strip is desktop-only. |
 
 ## Setup
 
@@ -140,7 +141,7 @@ HEADLESS=true pytest
 
 `-n auto` (pytest-xdist) starts one worker per CPU. Each worker opens its own browser. `reports/report.html` and `reports/pytest-debug.html` are written once, after the workers finish. Screenshot files include the worker id so they do not overwrite each other, for example `reports/amazon_login_form_actual.gw0.png` and `reports/seat_covers_cart.gw0.png`. A normal run without `-n` keeps the unsuffixed names.
 
-`pytest.ini` also defines `login`, `cart`, `tabs`, `automotive`, `search`, `language`, `bestsellers`, `help`, `deals`, `registry`, `new_releases`, `gift_cards`, `sell`, `find_a_gift`, `amazon_home`, `books`, `beauty`, `electronics`, `baby`, `footer`, `sports`, `video_games`, `pet_supplies`, `product`, `tools`, `appliances`, `camera_photo`, `software`, `computers`, `arts_crafts`, `musical_instruments`, `haul`, `office_products`, `clothing`, `smart_home`, `industrial`, `movies_tv`, `toys`, `collectibles`, `audible`, `cell_phones`, `ci_skip`, `chromium_only`, and `desktop_only`. `--strict-markers` is on, so an unknown marker fails collection.
+`pytest.ini` also defines `login`, `cart`, `tabs`, `automotive`, `search`, `language`, `bestsellers`, `help`, `deals`, `registry`, `new_releases`, `gift_cards`, `sell`, `find_a_gift`, `amazon_home`, `books`, `beauty`, `electronics`, `baby`, `footer`, `sports`, `video_games`, `pet_supplies`, `product`, `tools`, `appliances`, `camera_photo`, `software`, `computers`, `arts_crafts`, `musical_instruments`, `haul`, `office_products`, `clothing`, `smart_home`, `industrial`, `movies_tv`, `toys`, `collectibles`, `audible`, `cell_phones`, `apps`, `ci_skip`, `chromium_only`, and `desktop_only`. `--strict-markers` is on, so an unknown marker fails collection.
 
 ## Devices
 
