@@ -206,6 +206,10 @@ STORIES: dict[str, dict[str, str]] = {
         "title": "Apps & Games Fire Tablet Apps shows a price",
         "why": "Opens Apps & Games, checks the store categories, and opens Fire Tablet Apps to see a price.",
     },
+    "test_prime_video_storefront_shows_a_title": {
+        "title": "Prime Video storefront shows a title",
+        "why": "Opens Prime Video, checks that a carousel is listed, and checks that a title card is showing.",
+    },
     "test_search_result_shows_title_price_and_add_to_cart": {
         "title": "Product page shows a title, price, and Add to cart",
         "why": "Searches for batteries, opens the first result, and checks the title, price, and Add to cart.",
@@ -257,6 +261,7 @@ MARKER_LABELS = {
     "audible": "Audible",
     "cell_phones": "Cell Phones & Accessories",
     "apps": "Apps & Games",
+    "prime_video": "Prime Video",
     "ci_skip": "Skipped in CI",
     "chromium_only": "Chromium baseline",
     "desktop_only": "Desktop only",

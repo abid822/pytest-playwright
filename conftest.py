@@ -30,6 +30,7 @@ from pages.collectibles_page import CollectiblesPage
 from pages.computers_page import ComputersPage
 from pages.haul_page import HaulPage
 from pages.industrial_page import IndustrialPage
+from pages.prime_video_page import PrimeVideoPage
 from pages.customer_service_page import CustomerServicePage
 from pages.deals_page import DealsPage
 from pages.electronics_page import ElectronicsPage
@@ -375,6 +376,11 @@ def smart_home_page(sb_page) -> SmartHomePage:
 @pytest.fixture
 def industrial_page(sb_page) -> IndustrialPage:
     return IndustrialPage(sb_page)
+
+
+@pytest.fixture
+def prime_video_page(sb_page) -> PrimeVideoPage:
+    return PrimeVideoPage(sb_page)
 
 
 @pytest.fixture
