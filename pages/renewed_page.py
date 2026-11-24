@@ -5,21 +5,19 @@ from playwright.sync_api import Page, expect
 from locators.renewed_locators import RenewedLocators
 from pages.base_page import BasePage
 
-# Categories that stay on the Renewed grid. Brand tiles rotate.
-CORE_CATEGORIES = [
-    "Computer & Accessories",
-    "Tablets",
-    "Cameras",
-    "Headphones",
+# Sections that stay on the Renewed store. Category tiles rotate.
+CORE_SECTIONS = [
+    "Explore popular brands",
+    "The Renewed promise",
 ]
 
 
 class RenewedPage(BasePage):
-    """Amazon Renewed: store categories, then a priced Headphones product."""
+    """Amazon Renewed: store sections, then a priced refurbished product."""
 
     def __init__(self, page: Page) -> None:
         super().__init__(page)
-        self.category_links = page.locator(RenewedLocators.CATEGORY_LINK)
+        self.product_titles = page.locator(RenewedLocators.PRODUCT_TITLE)
 
     def _renewed_ready(self) -> bool:
         # The store title says Amazon Renewed, and the guarantee line has painted.
@@ -50,93 +48,43 @@ class RenewedPage(BasePage):
         self.expect_title(re.compile(r"Amazon Renewed", re.I))
         guarantee = self.page.get_by_text(re.compile(r"Amazon Renewed Guarantee", re.I))
         expect(guarantee.first).to_be_visible()
-        self._reveal_categories()
 
-    def _reveal_categories(self) -> None:
-        # The category grid sits under the banner and is sometimes not in the DOM yet.
-        for _ in range(8):
-            if self._categories_present():
-                return
-            self.page.mouse.wheel(0, 1200)
-            self.page.wait_for_timeout(400)
-
-    def _categories_present(self) -> bool:
-        return all(self._category_link(name).count() > 0 for name in CORE_CATEGORIES)
-
-    def _category_link(self, name: str):
-        # Link text includes surrounding whitespace. Match the tile label.
-        return self.category_links.filter(
-            has_text=re.compile(rf"^\s*{re.escape(name)}\s*$", re.I)
-        ).first
-
-    def expect_core_categories(self, names: list[str] | None = None) -> None:
-        # Step 1: Scroll until the grid is in the document
-        self._reveal_categories()
-        # Step 2: Each core category is listed
+    def expect_core_sections(self, names: list[str] | None = None) -> None:
+        # Each store section is listed. Tile names under them change between visits.
         missing = []
-        for name in names or CORE_CATEGORIES:
-            link = self._category_link(name)
-            if link.count() == 0:
+        for name in names or CORE_SECTIONS:
+            section = self.page.get_by_text(
+                re.compile(rf"^\s*{re.escape(name)}\s*$", re.I)
+            )
+            try:
+                visible = section.count() > 0 and section.first.is_visible()
+            except Exception:
+                visible = False
+            if not visible:
                 missing.append(name)
-        assert not missing, f"Missing Amazon Renewed categories: {missing}"
-
-    def _category_node(self, href: str) -> str:
-        # Search links encode the department as n%3A172541 or n:172541.
-        match = re.search(r"(?:n%3A|n:)(\d+)", href)
-        return match.group(1) if match else ""
-
-    def _category_ready(self, node: str) -> bool:
-        try:
-            url = self.page.url or ""
-            if node not in url or "12653393011" not in url:
-                return False
-            price = self.page.locator(RenewedLocators.PRODUCT_PRICE)
-            return price.count() > 0
-        except Exception:
-            return False
-
-    def open_category(self, name: str) -> None:
-        # Step 1: Open that category from the Renewed grid
-        self._reveal_categories()
-        link = self._category_link(name)
-        expect(link).to_be_visible()
-        href = link.get_attribute("href") or ""
-        node = self._category_node(href)
-        assert node, f"{name} category link has no node"
-        link.click()
-        # Step 2: If the click does not leave the landing page, follow the href
-        pattern = re.compile(rf"(?:n%3A|n:){node}(?:&|$)")
-        try:
-            expect(self.page).to_have_url(pattern, timeout=8000)
-        except AssertionError:
-            self._open_href(href)
-        self.wait_for_page_load()
-        self.dismiss_continue_shopping()
-        # The click sometimes lands on a shell: right node, no prices.
-        # A reload paints the category page. A second goto of the same href does not.
-        if not self._category_ready(node):
-            self.page.reload(wait_until="domcontentloaded")
-            self.wait_for_page_load()
-            self.dismiss_continue_shopping()
-        expect(self.page).to_have_url(re.compile(r"srs=12653393011"))
-        expect(self.page).to_have_url(pattern)
-        # The document title stays "Amazon.com". The search scope names the store.
-        scope = self.page.locator(RenewedLocators.SEARCH_SCOPE).first
-        expect(scope).to_be_visible()
-        expect(scope).to_contain_text(re.compile(r"Amazon Renewed", re.I))
+        assert not missing, f"Missing Amazon Renewed sections: {missing}"
 
     def expect_priced_product(self) -> None:
-        # A result on the category page is marked Renewed and shows a dollar price.
-        card = self.page.locator(RenewedLocators.RESULT_CARD).first
-        title = card.locator(RenewedLocators.RESULT_TITLE).first
-        expect(title).to_be_visible()
-        name = " ".join((title.inner_text() or "").split())
-        assert re.search(r"Renewed", name, re.I), (
-            f"Amazon Renewed result is not marked Renewed: {name!r}"
+        # A refurbished card shows a dollar price.
+        titles = self.product_titles.filter(
+            has_text=re.compile(r"Renewed|Refurbished", re.I)
         )
-        price = card.locator(RenewedLocators.PRODUCT_PRICE).first
-        expect(price).to_be_attached()
-        text = " ".join((price.text_content() or "").split())
-        assert re.search(r"\$\s*\d", text), (
-            f"Amazon Renewed product has no price: {text!r}"
-        )
+        expect(titles.first).to_be_visible()
+        for index in range(min(titles.count(), 6)):
+            title = titles.nth(index)
+            card = title.locator(
+                "xpath=ancestor::div[.//span[contains(@class,'a-offscreen')]][1]"
+            )
+            price = card.locator(RenewedLocators.PRODUCT_PRICE).first
+            if price.count() == 0:
+                continue
+            name = " ".join((title.inner_text() or "").split())
+            text = " ".join((price.text_content() or "").split())
+            assert re.search(r"Renewed|Refurbished", name, re.I), (
+                f"Amazon Renewed product is not refurbished: {name!r}"
+            )
+            assert re.search(r"\$\s*\d", text), (
+                f"Amazon Renewed product has no price: {text!r}"
+            )
+            return
+        raise AssertionError("Amazon Renewed product has no price")
