@@ -90,6 +90,7 @@ Amazon is a live site. When the continue-shopping check shows an "I am human" ch
 | `tests/test_cell_phones.py` | Opens Cell Phones & Accessories, checks Cell Phones, Accessories, Cases, and Wearable Technology, then opens Cell Phones and checks that a product shows a price. Markers: `cell_phones`, `desktop_only`. The store category strip is desktop-only. |
 | `tests/test_apps.py` | Opens Apps & Games, checks Fire Tablet Apps, Fire TV Apps, and Games, then opens Fire Tablet Apps and checks that a product shows a price. Markers: `apps`, `desktop_only`. The store category strip is desktop-only. |
 | `tests/test_prime_video.py` | Opens Prime Video, checks that a carousel is listed, and checks that a title card shows a name. Markers: `prime_video`, `desktop_only`. |
+| `tests/test_renewed.py` | Opens Amazon Renewed, checks Explore popular brands and The Renewed promise, then checks that a refurbished product shows a price. Markers: `renewed`, `desktop_only`. |
 
 ## Setup
 
