@@ -31,6 +31,7 @@ from pages.computers_page import ComputersPage
 from pages.haul_page import HaulPage
 from pages.industrial_page import IndustrialPage
 from pages.prime_video_page import PrimeVideoPage
+from pages.renewed_page import RenewedPage
 from pages.customer_service_page import CustomerServicePage
 from pages.deals_page import DealsPage
 from pages.electronics_page import ElectronicsPage
@@ -381,6 +382,11 @@ def industrial_page(sb_page) -> IndustrialPage:
 @pytest.fixture
 def prime_video_page(sb_page) -> PrimeVideoPage:
     return PrimeVideoPage(sb_page)
+
+
+@pytest.fixture
+def renewed_page(sb_page) -> RenewedPage:
+    return RenewedPage(sb_page)
 
 
 @pytest.fixture
