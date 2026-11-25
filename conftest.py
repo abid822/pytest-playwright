@@ -13,6 +13,7 @@ from config.settings import (
     normalize_device,
     settings,
 )
+from pages.amazon_custom_page import AmazonCustomPage
 from pages.amazon_home_page import AmazonHomePage
 from pages.appliances_page import AppliancesPage
 from pages.arts_crafts_page import ArtsCraftsPage
@@ -238,6 +239,11 @@ def pet_supplies_page(sb_page) -> PetSuppliesPage:
 @pytest.fixture
 def product_page(sb_page) -> ProductPage:
     return ProductPage(sb_page)
+
+
+@pytest.fixture
+def amazon_custom_page(sb_page) -> AmazonCustomPage:
+    return AmazonCustomPage(sb_page)
 
 
 @pytest.fixture
