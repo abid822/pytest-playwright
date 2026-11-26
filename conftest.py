@@ -31,6 +31,7 @@ from pages.clothing_page import ClothingPage
 from pages.collectibles_page import CollectiblesPage
 from pages.computers_page import ComputersPage
 from pages.haul_page import HaulPage
+from pages.handmade_page import HandmadePage
 from pages.industrial_page import IndustrialPage
 from pages.prime_video_page import PrimeVideoPage
 from pages.renewed_page import RenewedPage
@@ -314,6 +315,11 @@ def cell_phones_page(sb_page) -> CellPhonesPage:
 @pytest.fixture
 def haul_page(sb_page) -> HaulPage:
     return HaulPage(sb_page)
+
+
+@pytest.fixture
+def handmade_page(sb_page) -> HandmadePage:
+    return HandmadePage(sb_page)
 
 
 @pytest.fixture
