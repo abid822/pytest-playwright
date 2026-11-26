@@ -222,6 +222,10 @@ STORIES: dict[str, dict[str, str]] = {
         "title": "Amazon Custom Jewelry shows a price",
         "why": "Opens Amazon Custom, checks the store categories, and opens Jewelry to see a price.",
     },
+    "test_handmade_jewelry_shows_a_price": {
+        "title": "Handmade Jewelry shows a price",
+        "why": "Opens Handmade, checks the shop categories, and opens Jewelry to see a price.",
+    },
     "test_search_result_shows_title_price_and_add_to_cart": {
         "title": "Product page shows a title, price, and Add to cart",
         "why": "Searches for batteries, opens the first result, and checks the title, price, and Add to cart.",
@@ -277,6 +281,7 @@ MARKER_LABELS = {
     "renewed": "Amazon Renewed",
     "cds_vinyl": "CDs & Vinyl",
     "amazon_custom": "Amazon Custom",
+    "handmade": "Handmade",
     "ci_skip": "Skipped in CI",
     "chromium_only": "Chromium baseline",
     "desktop_only": "Desktop only",
