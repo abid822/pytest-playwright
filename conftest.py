@@ -54,6 +54,7 @@ from pages.tools_page import ToolsPage
 from pages.toys_page import ToysPage
 from pages.video_games_page import VideoGamesPage
 from pages.pet_supplies_page import PetSuppliesPage
+from pages.pharmacy_page import PharmacyPage
 from pages.product_page import ProductPage
 from pages.musical_instruments_page import MusicalInstrumentsPage
 from pages.office_products_page import OfficeProductsPage
@@ -320,6 +321,11 @@ def haul_page(sb_page) -> HaulPage:
 @pytest.fixture
 def handmade_page(sb_page) -> HandmadePage:
     return HandmadePage(sb_page)
+
+
+@pytest.fixture
+def pharmacy_page(sb_page) -> PharmacyPage:
+    return PharmacyPage(sb_page)
 
 
 @pytest.fixture
