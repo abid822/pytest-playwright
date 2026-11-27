@@ -1,0 +1,12 @@
+import pytest
+
+from pages.grocery_page import GroceryPage
+
+
+@pytest.mark.desktop_only
+@pytest.mark.grocery
+def test_grocery_product_shows_a_price(grocery_page: GroceryPage):
+    # Step 1: Open the Grocery store
+    grocery_page.open_grocery()
+    # Step 2: Core store aisles are listed
+    grocery_page.expect_core_aisles()
