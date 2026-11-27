@@ -66,3 +66,17 @@ class GroceryPage(BasePage):
             if link.count() == 0:
                 missing.append(name)
         assert not missing, f"Missing Grocery aisles: {missing}"
+
+    def expect_breakfast_aisle(self) -> None:
+        # Breakfast stays in the aisle row. The card label is the link name.
+        link = self._aisle_link("Breakfast")
+        expect(link).to_be_visible()
+
+    def expect_priced_product(self) -> None:
+        # A product card on the Grocery page shows a dollar price.
+        price = self.page.locator(GroceryLocators.PRODUCT_PRICE).first
+        expect(price).to_be_attached()
+        text = " ".join((price.text_content() or "").split())
+        assert re.search(r"\$\s*\d", text), (
+            f"Grocery product has no price: {text!r}"
+        )
