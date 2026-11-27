@@ -41,6 +41,7 @@ from pages.electronics_page import ElectronicsPage
 from pages.find_a_gift_page import FindAGiftPage
 from pages.footer_page import FooterPage
 from pages.gift_cards_page import GiftCardsPage
+from pages.grocery_page import GroceryPage
 from pages.home_page import HomePage
 from pages.new_releases_page import NewReleasesPage
 from pages.registry_page import RegistryPage
@@ -361,6 +362,11 @@ def find_a_gift_page(sb_page) -> FindAGiftPage:
 @pytest.fixture
 def gift_cards_page(sb_page) -> GiftCardsPage:
     return GiftCardsPage(sb_page)
+
+
+@pytest.fixture
+def grocery_page(sb_page) -> GroceryPage:
+    return GroceryPage(sb_page)
 
 
 @pytest.fixture
