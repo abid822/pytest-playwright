@@ -234,6 +234,10 @@ STORIES: dict[str, dict[str, str]] = {
         "title": "Grocery product shows a price",
         "why": "Opens Grocery, checks the store aisles, and checks that a product shows a price.",
     },
+    "test_amazon_devices_kindle_shows_a_price": {
+        "title": "Amazon Devices Kindle shows a price",
+        "why": "Opens Amazon Devices, checks the store sections, and opens Kindle to see a price.",
+    },
     "test_search_result_shows_title_price_and_add_to_cart": {
         "title": "Product page shows a title, price, and Add to cart",
         "why": "Searches for batteries, opens the first result, and checks the title, price, and Add to cart.",
@@ -292,6 +296,7 @@ MARKER_LABELS = {
     "handmade": "Handmade",
     "pharmacy": "Amazon Pharmacy",
     "grocery": "Grocery",
+    "amazon_devices": "Amazon Devices",
     "ci_skip": "Skipped in CI",
     "chromium_only": "Chromium baseline",
     "desktop_only": "Desktop only",
